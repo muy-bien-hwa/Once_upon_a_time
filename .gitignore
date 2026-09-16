@@ -1,0 +1,29 @@
+# 비밀값: 절대 커밋하지 말 것 (구글 client_secret, JWT 키 등)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# 로컬 DB
+*.db
+*.sqlite3
+
+# Node (프론트 방식에 따라 필요)
+node_modules/
+dist/
+
+# 에디터·OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
