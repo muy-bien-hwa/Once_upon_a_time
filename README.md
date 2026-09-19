@@ -8,7 +8,10 @@
 
 ## Stack
 - Frontend: React (Vite)
-- Backend: FastAPI
+- Backend: FastAPI · PostgreSQL · SQLAlchemy · Alembic
+
+## Structure
+- [`backend/`](backend/README.md): API 서버
 
 ## Status
-- 설계 단계
+- 개발 중: 백엔드 뼈대 (서버, DB 연결, 테이블)
