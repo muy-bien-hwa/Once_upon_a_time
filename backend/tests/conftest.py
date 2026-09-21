@@ -31,6 +31,34 @@ def db_conn():
 
 
 @pytest.fixture
+def db_session(db_conn):
+    """API 테스트용 세션: 테스트 트랜잭션 안에서 동작 → 코드가 저장(commit)해도 끝나면 전부 되돌림"""
+    from sqlalchemy.orm import Session
+
+    session = Session(
+        bind=db_conn, join_transaction_mode="create_savepoint", expire_on_commit=False
+    )
+    yield session
+    session.close()
+
+
+@pytest.fixture
+def client(db_session, seed):
+    """API 호출용 클라이언트: 테스트 DB 세션을 쓰고, 로그인 유저는 seed의 작가"""
+    from fastapi.testclient import TestClient
+
+    from app.deps import get_current_user, get_db
+    from app.main import app
+    from app.models import User
+
+    app.dependency_overrides[get_db] = lambda: db_session
+    app.dependency_overrides[get_current_user] = lambda: db_session.get(User, seed["author"])
+    with TestClient(app) as test_client:
+        yield test_client
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture
 def seed(db_conn):
     """테스트용 기본 데이터: 작가 1명, 투표자 1명, 스토리 1개"""
     add_user = text(

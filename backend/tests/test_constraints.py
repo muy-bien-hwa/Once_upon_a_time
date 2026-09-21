@@ -41,6 +41,21 @@ def test_invalid_sentence_is_rejected(db_conn, seed, content, depth, status, con
     assert rejected_by(db_conn, INSERT_SENTENCE, params) == constraint
 
 
+def test_story_has_only_one_first_sentence(db_conn, seed):
+    # 스토리당 첫 문장은 1개 (D-65)
+    add_sentence(db_conn, seed, content="첫 문장")
+    params = {**seed, "content": "두 번째 첫 문장", "depth": 0, "status": "active"}
+
+    assert rejected_by(db_conn, INSERT_SENTENCE, params) == "uq_sentences_one_root_per_story"
+
+
+def test_first_sentence_cannot_be_deleted(db_conn, seed):
+    # 첫 문장은 삭제 상태가 될 수 없음 (D-66)
+    params = {**seed, "content": "첫 문장", "depth": 0, "status": "deleted"}
+
+    assert rejected_by(db_conn, INSERT_SENTENCE, params) == "ck_sentences_root_not_deleted"
+
+
 def test_report_needs_exactly_one_target(db_conn, seed):
     sql = text("INSERT INTO reports (reporter_id) VALUES (:voter)")
 
