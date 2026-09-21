@@ -12,6 +12,7 @@
 
 ## Structure
 - [`backend/`](backend/README.md): API 서버
+- [`frontend/`](frontend/README.md): 웹 화면
 
 ## Status
-- 개발 중: 백엔드 뼈대 (서버, DB 연결, 테이블)
+- 개발 중: 뼈대 완성 (백엔드 서버·DB·테이블, 프론트엔드 화면·라우팅)

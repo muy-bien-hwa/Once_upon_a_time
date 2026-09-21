@@ -26,9 +26,7 @@ class ForumPost(IdMixin, CreatedAtMixin, Base):
     author_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
     title: Mapped[str] = mapped_column(String(100))
     body: Mapped[str] = mapped_column(String(5000))
-    quoted_sentence_id: Mapped[int | None] = mapped_column(
-        BigInteger, ForeignKey("sentences.id")
-    )
+    quoted_sentence_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("sentences.id"))
     pin_slot: Mapped[int | None] = mapped_column(SmallInteger)
     status: Mapped[str] = mapped_column(String(10), server_default="active")
 
@@ -41,9 +39,7 @@ class ForumPostVote(CreatedAtMixin, Base):
     )
 
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), primary_key=True)
-    post_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("forum_posts.id"), primary_key=True
-    )
+    post_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("forum_posts.id"), primary_key=True)
     value: Mapped[int] = mapped_column(SmallInteger)
 
 

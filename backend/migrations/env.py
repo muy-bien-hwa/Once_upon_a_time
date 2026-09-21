@@ -13,7 +13,8 @@ config = context.config
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # disable_existing_loggers=False: 테스트 중 마이그레이션을 돌려도 앱의 로그가 꺼지지 않게
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 # 모델에서 테이블 목록을 가져옴 → autogenerate가 DB와 비교할 기준
 target_metadata = Base.metadata
