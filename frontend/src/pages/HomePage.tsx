@@ -7,7 +7,7 @@ type Health = {
 }
 
 export default function HomePage() {
-  const [health, setHealth] = useState<Health | null>(null)
+  const [health, setHealth] = useState<Health | null>(null)  // <...> = TypeScript 표시. 이 state 에는 Health 모양의 값 또는 null 만 들어간다는 뜻.
   const [failed, setFailed] = useState(false)
 
   // 화면이 처음 나타날 때 한 번 서버 상태를 물어봄
