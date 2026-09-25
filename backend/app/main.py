@@ -5,7 +5,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.db import engine
-from app.routers import sentences, stories
+from app.routers import sentences, stats, stories
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +18,7 @@ app = FastAPI(
 )
 app.include_router(stories.router)
 app.include_router(sentences.router)
+app.include_router(stats.router)
 
 
 @app.get("/api/health")

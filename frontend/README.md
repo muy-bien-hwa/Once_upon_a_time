@@ -1,16 +1,25 @@
 # frontend
 
-Once upon a time 웹 화면 · React + TypeScript + Vite + React Router + Tailwind CSS
+Once upon a time 웹 화면 · React + TypeScript + Vite + React Router + TanStack Query + Tailwind CSS
 
 ## 구조
 ```
 frontend/
 ├─ src/
-│  ├─ main.tsx             시작점: React를 화면에 붙이고 라우터 연결
+│  ├─ main.tsx             시작점: React를 화면에 붙이고 라우터·서버 데이터 관리자(TanStack Query) 연결
 │  ├─ App.tsx              주소(URL)별 화면 목록 (라우팅)
 │  ├─ index.css            Tailwind 불러오기
+│  ├─ api/                 서버 API 호출
+│  │  ├─ client.ts         요청 보내기 + 실패 응답을 에러 메시지로 바꾸기
+│  │  └─ stories.ts        스토리 API와 데이터 모양
+│  ├─ components/          화면 조각
+│  │  ├─ StoryCard.tsx     스토리 목록 카드
+│  │  └─ Pagination.tsx    페이지 번호 버튼
+│  ├─ lib/
+│  │  └─ time.ts           시간 표시 ("3시간 전", "2026.09.21")
 │  └─ pages/               화면 단위 컴포넌트
-│     ├─ HomePage.tsx      첫 화면 (서버 연결 상태 표시)
+│     ├─ StoryListPage.tsx 첫 화면: 스토리 목록 (정렬·페이지·개수)
+│     ├─ ComingSoonPage.tsx 준비 중인 화면 자리
 │     └─ NotFoundPage.tsx  없는 주소
 ├─ index.html              HTML 뼈대
 ├─ vite.config.ts          Vite 설정 (Tailwind, /api·/auth → 백엔드 프록시)

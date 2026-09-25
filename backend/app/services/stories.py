@@ -59,6 +59,25 @@ def get_story(db: Session, story_id: int) -> StoryOut:
     return _to_out(row)
 
 
+def list_stories_by_ids(db: Session, story_ids: list[int]) -> list[StoryOut]:
+    """id 목록으로 스토리를 가져옴 (숨겨진 스토리는 빠짐). 순서는 받은 id 순서대로"""
+    if not story_ids:
+        return []
+    rows = db.execute(_select_stories().where(Story.id.in_(story_ids))).all()
+    found = {row[0].id: _to_out(row) for row in rows}
+    return [found[story_id] for story_id in story_ids if story_id in found]
+
+
+def most_authors_story(db: Session) -> StoryOut | None:
+    """참여 작가가 가장 많은 스토리 (홈 기록 칸). 스토리가 없으면 None"""
+    row = db.execute(
+        _select_stories()
+        .order_by(_author_count.desc(), Story.created_at.asc(), Story.id.asc())
+        .limit(1)
+    ).first()
+    return _to_out(row) if row else None
+
+
 def create_story(db: Session, user: User, data: StoryCreate) -> StoryCreateOut:
     """스토리와 첫 문장을 한 번에 저장 (둘 다 저장되거나 둘 다 취소)"""
     story = Story(title=data.title, creator_id=user.id)
@@ -77,17 +96,21 @@ def _select_stories():
             _root.id,
             _root.content,
             _root.status,
+            User.nickname,
             _recommend_count,
             _author_count,
             _max_depth,
         )
         .join(*_root_join)
+        .join(User, User.id == Story.creator_id)
         .where(_visible)
     )
 
 
 def _to_out(row: Row) -> StoryOut:
-    story, root_id, root_content, root_status, recommend_count, author_count, max_depth = row
+    story, root_id, root_content, root_status, creator, recommend_count, author_count, max_depth = (
+        row
+    )
     return StoryOut(
         id=story.id,
         title=story.title,
@@ -95,6 +118,7 @@ def _to_out(row: Row) -> StoryOut:
         # 신고로 접힌 첫 문장은 내용을 보내지 않음 (D-69)
         first_sentence=root_content if root_status == "active" else None,
         first_sentence_status=root_status,
+        creator_nickname=creator,
         recommend_count=recommend_count,
         author_count=author_count,
         max_depth=max_depth,

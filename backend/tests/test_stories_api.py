@@ -46,6 +46,7 @@ def test_create_story_saves_title_and_first_sentence(client):
     assert story["first_sentence"] == "편지가 왔다."
     assert story["first_sentence_id"] == sentence["id"]
     assert story["first_sentence_status"] == "active"
+    assert story["creator_nickname"] == "author"
     assert story["author_count"] == 1
     assert story["max_depth"] == 0
     assert sentence["depth"] == 0

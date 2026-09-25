@@ -1,1 +1,136 @@
 @import 'tailwindcss';
+
+@theme {
+  /* 글꼴: 기본은 고딕, 이야기 문장만 명조 (D-79) */
+  --font-sans: 'Pretendard Variable', Pretendard, system-ui, 'Apple SD Gothic Neo', sans-serif;
+  --font-serif: 'Noto Serif KR', 'Nanum Myeongjo', serif;
+
+  /* 문장 본문 전용 크기: 18px · 줄간격 1.8 (명조는 고딕보다 작아 보여서 조금 크게) */
+  --text-sentence: 1.125rem;
+  --text-sentence--line-height: 1.8;
+  --text-sentence--letter-spacing: -0.003em;
+
+  /* 포인트 색: 차분한 초록 (버튼, 지금 위치, 기록 숫자 등에만 씀) */
+  --color-brand-50: #eef6f1;
+  --color-brand-100: #d7eade;
+  --color-brand-600: #2f7d5a;
+  --color-brand-700: #256448;
+
+  /* 종이 색 배경 (흰 카드가 떠 보이도록) */
+  --color-paper: #f7f4ee;
+
+  /* 종이처럼 아래로만 떨어지는 얕은 그림자 */
+  --shadow-paper:
+    0 1px 0 0 rgba(120, 113, 108, 0.1), 0 2px 6px -2px rgba(68, 64, 60, 0.12);
+  --shadow-paper-lift:
+    0 2px 0 0 rgba(120, 113, 108, 0.1), 0 8px 18px -6px rgba(68, 64, 60, 0.18);
+}
+
+/* 한글은 단어 단위로 줄바꿈 (줄 끝에서 단어가 잘리지 않게) */
+html {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+body {
+  background-color: var(--color-paper);
+  /* 아주 옅은 종이 결 (눈에 보이면 실패) */
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(120, 113, 108, 0.018) 0px,
+    rgba(120, 113, 108, 0.018) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+}
+
+/* 책 느낌 1: 화면 오른쪽 끝에 책장이 겹친 단면 (장식 — 클릭은 통과) */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 10px;
+  pointer-events: none;
+  z-index: 40;
+  background:
+    linear-gradient(to left, rgba(68, 64, 60, 0.12), rgba(68, 64, 60, 0) 10px),
+    repeating-linear-gradient(
+      to left,
+      #ffffff 0px,
+      #ffffff 2px,
+      rgba(120, 113, 108, 0.22) 2px,
+      rgba(120, 113, 108, 0.22) 3px
+    );
+}
+
+@media (max-width: 640px) {
+  body::after {
+    width: 5px;
+  }
+}
+
+/* 책 느낌 2: 읽기 화면 두 칸 사이의 접힌 자국 (넓은 화면에서만) */
+@media (min-width: 768px) {
+  .book-gutter {
+    position: relative;
+  }
+
+  .book-gutter::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -1.25rem;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(120, 113, 108, 0.35) 12%,
+      rgba(120, 113, 108, 0.35) 88%,
+      transparent 100%
+    );
+  }
+}
+
+/* 키보드로 이동할 때 지금 위치가 보이도록 */
+:focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Hot 창이 바뀔 때 아래에서 올라오며 나타남 (D-76) */
+@keyframes hot-pane-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hot-pane {
+  animation: hot-pane-in 400ms ease-out;
+}
+
+/* 애니메이션을 줄이도록 설정한 사용자에게는 움직임 없이 */
+@media (prefers-reduced-motion: reduce) {
+  .hot-pane {
+    animation: none;
+  }
+}
+
+/* 고대비 설정에서는 장식(책장·종이 결) 제거 */
+@media (prefers-contrast: more) {
+  body {
+    background-image: none;
+  }
+
+  body::after {
+    display: none;
+  }
+}

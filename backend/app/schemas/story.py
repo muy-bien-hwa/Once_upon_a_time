@@ -30,6 +30,8 @@ class StoryOut(BaseModel):
     first_sentence: str | None
     # folded면 카드에 "신고 처리된 문장입니다."만 표시 (D-69)
     first_sentence_status: Literal["active", "folded"]
+    # 스토리를 시작한 작가 = 첫 문장을 쓴 사람 (읽기 화면 정보 칸)
+    creator_nickname: str
     recommend_count: int
     # 참여한 작가 수: 이 스토리에 문장을 한 번이라도 쓴 고유 유저 (D-24·D-38)
     author_count: int

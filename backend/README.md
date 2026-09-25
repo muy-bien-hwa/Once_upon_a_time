@@ -41,7 +41,7 @@ backend/
 2. `.env` 작성: DB 접속 정보 (항목은 `app/config.py` 참고)
 3. PostgreSQL에 DB `relay` 만들기
 4. 테이블 만들기: `uv run alembic upgrade head`
-5. 개발용 샘플 데이터 (선택): `uv run python -m scripts.seed`
+5. 개발용 샘플 데이터 (선택): `uv run python -m scripts.seed` (목록 페이지 확인용 스토리 45개 추가: `--many`)
 6. 서버 실행: `uv run fastapi dev app/main.py` → API 문서 http://localhost:8000/api/docs
 
 ## 테스트 · 코드 검사

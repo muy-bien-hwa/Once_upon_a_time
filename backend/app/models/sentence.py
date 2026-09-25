@@ -6,50 +6,42 @@ from sqlalchemy import (
     Integer,
     SmallInteger,
     String,
-    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import STATUS_CHECK, Base, CreatedAtMixin, IdMixin
 
 
-# 파이썬 클래스 1개 = 테이블 1개. id·created_at은 공통 부품에서 받아옴
-class Sentence(IdMixin, CreatedAtMixin, Base):
-    # DB에 만들어질 테이블 이름
-    __tablename__ = "sentences"
-    # 테이블 전체에 거는 규칙
-    __table_args__ = (
-        # 공백만 있는 문장 거부
-        CheckConstraint(r"content ~ '\S'", name="content_not_blank"),
+class Sentence(
+    IdMixin, CreatedAtMixin, Base
+):  # 파이썬 클래스 1개 = 테이블 1개. id·created_at은 공통 부품에서 받아옴
+    __tablename__ = "sentences"  # DB에 만들어질 테이블 이름
+    __table_args__ = (  # 테이블 전체에 거는 규칙
+        CheckConstraint(
+            r"content ~ '\S'", name="content_not_blank"
+        ),  # PostgreSQL 정규식 비교: content에 "공백(스페이스·탭·줄바꿈)이 아닌 글자 1개라도 있는가?
         CheckConstraint("depth >= 0", name="depth_non_negative"),
-        # 부모 없음 ⇔ 깊이 0
-        CheckConstraint("(parent_id IS NULL) = (depth = 0)", name="root_iff_depth_zero"),
-        # 첫 문장은 삭제될 수 없음 (D-66)
-        CheckConstraint("parent_id IS NOT NULL OR status <> 'deleted'", name="root_not_deleted"),
+        CheckConstraint(
+            "(parent_id IS NULL) = (depth = 0)", name="root_iff_depth_zero"
+        ),  # 부모 없음 ⇔ 깊이 0
         CheckConstraint(STATUS_CHECK, name="status_valid"),
-        # 인덱스 만들기
-        Index("ix_sentences_parent_id", "parent_id"),
+        Index("ix_sentences_parent_id", "parent_id"),  # 인덱스 만들기
         Index("ix_sentences_story_id_depth", "story_id", "depth"),
         Index("ix_sentences_author_id_story_id_created_at", "author_id", "story_id", "created_at"),
-        # 스토리당 첫 문장(parent_id가 빈 문장)은 1개만 (D-65)
-        Index(
-            "uq_sentences_one_root_per_story",
-            "story_id",
-            unique=True,
-            postgresql_where=text("parent_id IS NULL"),
-        ),
     )
 
-    # 필수 + stories 테이블 참조
-    story_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("stories.id"))
-    # `| None` = 비어도 됨 (첫 문장)
-    parent_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("sentences.id"))
+    story_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("stories.id")
+    )  # 필수 + stories 테이블 참조
+    parent_id: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("sentences.id")
+    )  # `| None` = 비어도 됨 (첫 문장)
     author_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
-    # 최대 100자
-    content: Mapped[str] = mapped_column(String(100))
+    content: Mapped[str] = mapped_column(String(100))  # 최대 100자
     depth: Mapped[int] = mapped_column(Integer)
-    # 값을 안 주면 'active'
-    status: Mapped[str] = mapped_column(String(10), server_default="active")
+    status: Mapped[str] = mapped_column(
+        String(10), server_default="active"
+    )  # 값을 안 주면 'active'
 
 
 class SentenceVote(CreatedAtMixin, Base):
