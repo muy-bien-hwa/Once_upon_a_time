@@ -5,7 +5,7 @@ import { fetchChildren, fetchPath, type SentenceSort } from '../api/sentences.ts
 import { fetchStory } from '../api/stories.ts'
 import Notice from '../components/Notice.tsx'
 import SentenceChoices from '../components/SentenceChoices.tsx'
-import SentencePath from '../components/SentencePath.tsx'
+import StoryPages from '../components/StoryPages.tsx'
 import StoryHeader from '../components/StoryHeader.tsx'
 
 // ④ 골라 읽기 = 공유 주소 (/s/문장번호)
@@ -22,6 +22,8 @@ export default function SentenceReadPage() {
     queryKey: ['path', id],
     queryFn: ({ signal }) => fetchPath(id, signal),
     enabled: validId,
+    // 다음 문장으로 넘어가는 동안 이전 이야기를 그대로 두어 화면이 깜빡이지 않게
+    placeholderData: keepPreviousData,
   })
   // 제목 아래 정보 칸에 쓸 스토리 정보 (시작한 작가·작가 수·최장 문장 수·추천 수)
   const storyId = pathQuery.data?.story.id
@@ -39,7 +41,7 @@ export default function SentenceReadPage() {
   })
 
   return (
-    <main className="min-h-screen bg-stone-50 px-4 py-6 sm:px-6">
+    <main className="min-h-screen bg-paper px-4 py-6 sm:px-6">
       <div className="mx-auto max-w-6xl">
         <StoryHeader title={pathQuery.data?.story.title ?? ''} story={storyQuery.data} />
 
@@ -59,12 +61,17 @@ export default function SentenceReadPage() {
               </Link>
             </Notice>
           ) : (
-            <div className="grid gap-6 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-              <section>
+            // 두 칸 사이 간격을 넓혀 책의 접힌 자국(.book-gutter)이 놓일 자리를 만듦
+            <div className="grid gap-6 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-10">
+              <section
+                className={`book-gutter transition-opacity ${
+                  pathQuery.isPlaceholderData ? 'opacity-70' : ''
+                }`}
+              >
                 <h2 className="mb-3 text-sm font-medium text-stone-500">
                   지금까지 이야기 ({pathQuery.data.items.length}문장)
                 </h2>
-                <SentencePath items={pathQuery.data.items} />
+                <StoryPages items={pathQuery.data.items} />
               </section>
 
               <section>
@@ -102,7 +109,7 @@ function Skeleton() {
   return (
     <div className="space-y-3" aria-label="불러오는 중">
       {[0, 1, 2].map((i) => (
-        <div key={i} className="h-20 animate-pulse rounded-2xl bg-stone-200/70" />
+        <div key={i} className="h-20 animate-pulse rounded-lg bg-stone-200/70" />
       ))}
     </div>
   )

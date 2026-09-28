@@ -24,7 +24,7 @@ export default function StoryHeader({ title, story }: { title: string; story?: S
         </span>
       </nav>
 
-      <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-2 rounded-2xl bg-white px-4 py-3 text-sm shadow-sm">
+      <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-2 rounded-lg bg-white px-4 py-3 text-sm shadow-paper ring-1 ring-stone-200/60">
         <Item label="시작한 작가" value={story?.creator_nickname} />
         <Item label="작가" value={story && `${story.author_count}명`} />
         <Item label="최장" value={story && `${story.max_depth + 1}문장`} />

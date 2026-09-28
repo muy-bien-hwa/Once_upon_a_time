@@ -54,7 +54,7 @@ export default function StoryListPage() {
   }
 
   return (
-    <main className="min-h-screen bg-stone-50 px-4 py-8 sm:px-6">
+    <main className="min-h-screen bg-paper px-4 py-8 sm:px-6">
       <div className="mx-auto max-w-6xl">
         <header className="py-6 text-center sm:py-10">
           <h1 className="text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl">
@@ -73,7 +73,8 @@ export default function StoryListPage() {
           </Link>
         </div>
 
-        <div className="mt-8 flex items-center gap-2">
+        {/* 좁은 화면에서 넘치지 않게 줄바꿈 허용 (1열·2열 선택은 휴대폰에선 항상 1열이라 숨김) */}
+        <div className="mt-8 flex flex-wrap items-center gap-2">
           <p className="mr-auto text-sm text-stone-500">{data ? `스토리 ${data.total}개` : ''}</p>
           <select
             aria-label="정렬"
@@ -87,7 +88,11 @@ export default function StoryListPage() {
               </option>
             ))}
           </select>
-          <div role="group" aria-label="보기 방식" className="flex rounded-lg bg-stone-200 p-0.5">
+          <div
+            role="group"
+            aria-label="보기 방식"
+            className="hidden rounded-lg bg-stone-200 p-0.5 sm:flex"
+          >
             {([1, 2] as const).map((value) => (
               <button
                 key={value}
@@ -104,15 +109,21 @@ export default function StoryListPage() {
               </button>
             ))}
           </div>
-          <div role="group" aria-label="한 페이지에 볼 개수" className="flex rounded-lg bg-stone-200 p-0.5">
+          <div
+            role="group"
+            aria-label="한 페이지에 볼 개수"
+            className="flex rounded-lg bg-stone-200 p-0.5"
+          >
             {SIZES.map((size) => (
               <button
                 key={size}
                 type="button"
                 aria-pressed={query.size === size}
                 onClick={() => changeQuery({ size, page: 1 })}
-                className={`rounded-md px-2.5 py-1 text-sm ${
-                  query.size === size ? 'bg-white font-medium text-stone-800 shadow-sm' : 'text-stone-500'
+                className={`rounded-md px-2.5 py-1.5 text-sm ${
+                  query.size === size
+                    ? 'bg-white font-medium text-stone-800 shadow-sm'
+                    : 'text-stone-500'
                 }`}
               >
                 {size}개
@@ -194,7 +205,7 @@ function Skeleton() {
   return (
     <ul className="space-y-3" aria-label="불러오는 중">
       {[0, 1, 2].map((i) => (
-        <li key={i} className="h-32 animate-pulse rounded-2xl bg-stone-200/70" />
+        <li key={i} className="h-32 animate-pulse rounded-lg bg-stone-200/70" />
       ))}
     </ul>
   )

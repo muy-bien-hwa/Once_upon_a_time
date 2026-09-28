@@ -24,6 +24,8 @@ export default function NewStoryPage() {
       // 방문 기록을 교체 → 새 스토리 화면에서 뒤로 가면 목록으로 (입력 화면으로 되돌아가지 않음)
       navigate(`/s/${created.sentence.id}`, { replace: true })
     },
+    // 실패하면 확인창을 닫아야 입력칸 아래의 안내 문구가 보임
+    onError: () => setConfirming(false),
   })
 
   const titleLength = [...title.trim()].length
@@ -36,7 +38,7 @@ export default function NewStoryPage() {
     !create.isPending
 
   return (
-    <main className="min-h-screen bg-stone-50 px-4 py-8 sm:px-6">
+    <main className="min-h-screen bg-paper px-4 py-8 sm:px-6">
       <div className="mx-auto max-w-2xl">
         <Link to="/" className="text-sm text-stone-500 hover:text-stone-800">
           ← 목록
@@ -47,7 +49,7 @@ export default function NewStoryPage() {
         </p>
 
         <form
-          className="mt-6 rounded-2xl bg-white p-5 shadow-sm"
+          className="mt-6 rounded-lg bg-white p-5 shadow-paper ring-1 ring-stone-200/60"
           onSubmit={(event) => {
             event.preventDefault()
             if (canSubmit) setConfirming(true)
@@ -71,7 +73,7 @@ export default function NewStoryPage() {
                 value={content}
                 onChange={(event) => setContent(event.target.value)}
                 placeholder="예) 옛날 옛적에 산골 마을에 말하는 고양이가 살았다."
-                className="w-full text-stone-800 outline-none placeholder:text-stone-300"
+                className="w-full font-serif text-sentence text-stone-800 outline-none placeholder:text-stone-300"
               />
             </Field>
           </div>
@@ -102,7 +104,7 @@ export default function NewStoryPage() {
           onCancel={() => setConfirming(false)}
         >
           <p className="font-medium text-stone-800">{title.trim()}</p>
-          <p className="mt-1 rounded-xl bg-stone-100 p-3 text-stone-800">{content.trim()}</p>
+          <p className="mt-1 rounded-lg bg-stone-100 p-3 font-serif text-[17px] leading-relaxed text-stone-800">{content.trim()}</p>
           <p className="mt-2 text-stone-500">제목과 첫 문장은 나중에 고치거나 지울 수 없어요.</p>
         </ConfirmDialog>
       </div>

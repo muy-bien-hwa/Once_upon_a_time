@@ -56,17 +56,24 @@ export function HotTopSentences() {
 
   return (
     <Columns data={data} isPending={isPending} empty="아직 추천받은 문장이 없어요">
-      {(item: HotSentence) => (
+      {(item: HotSentence, rank: number) => (
         <li key={item.sentence.id}>
-          <Link to={`/s/${item.sentence.id}`} className="block py-1">
-            <p className="truncate font-serif text-stone-900">“{item.sentence.content}”</p>
-            <p className="truncate text-[13px] text-stone-400">{item.story.title}</p>
-            <p className="text-[13px] text-stone-500">
-              <span className="font-semibold text-brand-700 tabular-nums">
-                추천 {item.vote_count}
-              </span>{' '}
-              · {item.sentence.author_nickname}
-            </p>
+          <Link to={`/s/${item.sentence.id}`} className="flex gap-2 py-1">
+            <span className="w-3 shrink-0 pt-0.5 text-[13px] font-bold text-stone-400 tabular-nums">
+              {rank}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate font-serif text-[15px] leading-6 text-stone-900">
+                “{item.sentence.content}”
+              </span>
+              <span className="block truncate text-[13px] text-stone-400">{item.story.title}</span>
+              <span className="block text-[13px] text-stone-500">
+                <span className="font-semibold text-brand-700 tabular-nums">
+                  추천 {item.vote_count}
+                </span>{' '}
+                · {item.sentence.author_nickname}
+              </span>
+            </span>
           </Link>
         </li>
       )}
@@ -101,7 +108,7 @@ function Columns<T>({
           {isPending ? (
             <div className="h-40 animate-pulse rounded-lg bg-stone-100" />
           ) : data && data[period.key].length > 0 ? (
-            <ol className="space-y-2">
+            <ol className="space-y-1.5">
               {data[period.key].map((item, index) => children(item, index + 1))}
             </ol>
           ) : (

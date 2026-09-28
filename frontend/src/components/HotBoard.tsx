@@ -53,9 +53,10 @@ export default function HotBoard() {
         </div>
       </div>
 
-      {/* 높이를 고정 → 창이 바뀌어도 아래 스토리 목록이 흔들리지 않음 */}
+      {/* 높이를 아예 고정(h-) → 어떤 창이 와도 아래 스토리 목록이 흔들리지 않음 */}
+      {/* 내용은 위에서부터 채움 → 일간·주간·월간 줄이 창마다 같은 자리에 옴 */}
       {/* key가 바뀌면 다시 그려지면서 등장 애니메이션이 한 번 실행됨 */}
-      <div key={index} className="hot-pane mt-5 flex min-h-[19rem] flex-col justify-center">
+      <div key={index} className="hot-pane mt-5 h-[26rem] overflow-hidden">
         {index === 0 && <HotTopStories />}
         {index === 1 && <HotTopSentences />}
         {index === 2 && <HotRecord />}

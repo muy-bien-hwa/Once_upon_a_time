@@ -8,7 +8,8 @@ type Props = {
 export default function Pagination({ page, totalPages, onChange }: Props) {
   if (totalPages <= 1) return null
 
-  const base = 'min-w-9 rounded-lg px-2 py-1.5 text-sm'
+  // 손가락으로 누르기 좋은 크기 (최소 44px)
+  const base = 'min-h-11 min-w-11 rounded-lg px-3 text-sm'
   const arrow = `${base} text-stone-600 hover:bg-stone-200 disabled:opacity-30 disabled:hover:bg-transparent`
 
   return (

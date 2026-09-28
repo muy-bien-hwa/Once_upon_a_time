@@ -16,17 +16,19 @@ export default function HotRecord() {
     queryFn: ({ signal }) => fetchRecord(signal),
   })
 
-  if (isPending) return <div className="h-32 animate-pulse rounded-xl bg-stone-100" />
+  // 로딩·빈 상태도 창 높이를 그대로 채워서 내용이 위로 쏠리지 않게
+  if (isPending) return <div className="h-full animate-pulse rounded-lg bg-stone-100" />
   if (isError || !data.most_authors_story) {
     return (
-      <p className="flex h-32 items-center justify-center text-stone-400">아직 기록이 없어요.</p>
+      <p className="flex h-full items-center justify-center text-stone-400">아직 기록이 없어요.</p>
     )
   }
 
   const story = data.most_authors_story
 
   return (
-    <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-center">
+    // 기록 창은 항목이 적으므로 창 한가운데에 둠
+    <div className="flex h-full flex-col items-center justify-center gap-4 text-center sm:flex-row sm:justify-center">
       <div className="flex-1">
         <p className="text-stone-600">기네스 세계기록 · 한 소설에 참여한 최다 작가</p>
         <p className="mt-1 text-3xl font-bold text-stone-800">{GUINNESS.authors}명</p>

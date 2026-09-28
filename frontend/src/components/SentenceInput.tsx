@@ -20,20 +20,23 @@ export default function SentenceInput({ parent }: { parent: Sentence }) {
       // 이 문장의 이어진 문장 목록과 스토리 목록(작가 수·최장 문장 수)을 다시 받아오게 함
       queryClient.invalidateQueries({ queryKey: ['children', parent.id] })
       queryClient.invalidateQueries({ queryKey: ['stories'] })
-      // 제목 아래 정보 칸의 작가 수·최장 문장 수도 바뀜
+      // 제목 아래 정보 칸의 작가 수·최장 문장 수, 홈 Hot의 기록도 바뀜
       queryClient.invalidateQueries({ queryKey: ['story'] })
+      queryClient.invalidateQueries({ queryKey: ['stats'] })
       setConfirming(false)
       setOpen(false)
       setText('')
       // 방금 쓴 문장 화면으로 이동 (D-62)
       navigate(`/s/${created.id}`)
     },
+    // 실패하면 확인창을 닫아야 입력칸 아래의 안내 문구가 보임
+    onError: () => setConfirming(false),
   })
 
   // 접힌·삭제된 문장 뒤에는 이어 쓸 수 없음 (D-50·D-70)
   if (parent.status !== 'active') {
     return (
-      <p className="mt-3 rounded-2xl border border-dashed border-stone-300 p-4 text-center text-sm text-stone-400">
+      <p className="mt-3 rounded-lg border border-dashed border-stone-300 p-4 text-center text-sm text-stone-400">
         {parent.status === 'folded'
           ? '신고 처리된 문장 뒤에는 이어 쓸 수 없어요.'
           : '삭제된 문장 뒤에는 이어 쓸 수 없어요.'}
@@ -46,7 +49,7 @@ export default function SentenceInput({ parent }: { parent: Sentence }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-3 w-full rounded-2xl border border-dashed border-stone-300 p-4 text-stone-500 transition hover:border-stone-400 hover:text-stone-700"
+        className="mt-3 w-full rounded-lg border border-dashed border-stone-300 p-4 text-stone-500 transition hover:border-stone-400 hover:text-stone-700"
       >
         + 여기에 이어 쓰기
       </button>
@@ -59,7 +62,7 @@ export default function SentenceInput({ parent }: { parent: Sentence }) {
   const canSubmit = length > 0 && length <= MAX_LENGTH && !write.isPending
 
   return (
-    <div className="mt-3 rounded-2xl border border-stone-300 bg-white p-4">
+    <div className="mt-3 rounded-lg border border-stone-300 bg-white p-4">
       <input
         type="text"
         autoFocus
@@ -70,7 +73,7 @@ export default function SentenceInput({ parent }: { parent: Sentence }) {
           if (event.key === 'Enter' && canSubmit) setConfirming(true)
         }}
         placeholder="다음 문장을 한 줄로 써 주세요"
-        className="w-full text-stone-800 outline-none placeholder:text-stone-400"
+        className="w-full font-serif text-sentence text-stone-800 outline-none placeholder:text-stone-400"
       />
 
       <div className="mt-3 flex items-center gap-2 text-sm">
@@ -109,7 +112,7 @@ export default function SentenceInput({ parent }: { parent: Sentence }) {
         onConfirm={() => write.mutate(trimmed)}
         onCancel={() => setConfirming(false)}
       >
-        <p className="rounded-xl bg-stone-100 p-3 text-stone-800">{trimmed}</p>
+        <p className="rounded-lg bg-stone-100 p-3 font-serif text-[17px] leading-relaxed text-stone-800">{trimmed}</p>
         <p className="mt-2 text-stone-500">등록한 문장은 나중에 고칠 수 없어요.</p>
       </ConfirmDialog>
     </div>

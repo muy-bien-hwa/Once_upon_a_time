@@ -7,7 +7,7 @@ import SentenceText from './SentenceText.tsx'
 export default function SentenceBox({ sentence }: { sentence: Sentence }) {
   return (
     <Link to={`/s/${sentence.id}`} className="flex items-start gap-2">
-      <article className="flex-1 rounded-2xl bg-white p-4 shadow-sm transition hover:shadow-md">
+      <article className="flex-1 rounded-lg bg-white p-4 shadow-paper ring-1 ring-stone-200/60 transition hover:shadow-paper-lift">
         <SentenceText sentence={sentence} />
         <div className="mt-3 flex items-center gap-2 text-xs text-stone-500">
           {sentence.author_nickname && <span>{sentence.author_nickname}</span>}

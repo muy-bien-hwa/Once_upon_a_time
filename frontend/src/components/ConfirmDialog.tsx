@@ -40,7 +40,7 @@ export default function ConfirmDialog({
         event.preventDefault()
         if (!busy) onCancel()
       }}
-      className="m-auto w-[min(26rem,90vw)] rounded-2xl bg-white p-6 shadow-xl backdrop:bg-stone-900/40"
+      className="m-auto w-[min(26rem,90vw)] rounded-lg bg-white p-6 shadow-xl backdrop:bg-stone-900/40"
     >
       <h2 className="text-lg font-semibold text-stone-800">{title}</h2>
       {children && <div className="mt-3 text-sm text-stone-600">{children}</div>}

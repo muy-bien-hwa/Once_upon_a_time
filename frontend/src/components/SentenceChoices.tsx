@@ -1,3 +1,4 @@
+import { motion } from 'motion/react'
 import type { Sentence, SentenceSort } from '../api/sentences.ts'
 import SentenceBox from './SentenceBox.tsx'
 import SentenceInput from './SentenceInput.tsx'
@@ -38,16 +39,23 @@ export default function SentenceChoices({ parent, items, sort, onSortChange, dim
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-stone-300 p-8 text-center text-stone-500">
+        <div className="rounded-lg border border-dashed border-stone-300 p-8 text-center text-stone-500">
           <p>이야기가 여기서 멈춰 있어요.</p>
           <p className="mt-1 text-sm">다음 문장을 쓰는 첫 작가가 되어 보세요.</p>
         </div>
       ) : (
         <ul className={`space-y-3 transition-opacity ${dim ? 'opacity-60' : ''}`}>
-          {items.map((sentence) => (
-            <li key={sentence.id}>
+          {items.map((sentence, index) => (
+            // 문장을 고르면 다음 선택지들이 차례로 나타남 (D-43 Motion)
+            <motion.li
+              key={sentence.id}
+              // 시작값을 완전 투명으로 두지 않음 → 어떤 이유로 애니메이션이 멈춰도 글은 읽힘
+              initial={{ opacity: 0.55, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25, delay: index * 0.04, ease: 'easeOut' }}
+            >
               <SentenceBox sentence={sentence} />
-            </li>
+            </motion.li>
           ))}
         </ul>
       )}
