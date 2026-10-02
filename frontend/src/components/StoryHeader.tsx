@@ -1,14 +1,18 @@
 import { Link } from 'react-router'
 import type { Story } from '../api/stories.ts'
+import AccountBar from './AccountBar.tsx'
 import ShareButton from './ShareButton.tsx'
 
 // 읽기 화면 맨 위: 스토리 제목 + 탭(커뮤니티는 4단계 자리) + 스토리 정보 칸
 export default function StoryHeader({ title, story }: { title: string; story?: Story }) {
   return (
     <header>
-      <Link to="/" className="text-sm text-stone-500 hover:text-stone-800">
-        ← 목록
-      </Link>
+      <div className="flex items-center justify-between gap-3">
+        <Link to="/" className="text-sm text-stone-500 hover:text-stone-800">
+          ← 목록
+        </Link>
+        <AccountBar />
+      </div>
       <div className="mt-2 flex items-start justify-between gap-3">
         <h1 className="text-2xl font-bold text-stone-800 sm:text-3xl">{title}</h1>
         <ShareButton title={title} />

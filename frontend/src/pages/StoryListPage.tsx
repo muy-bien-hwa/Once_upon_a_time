@@ -2,6 +2,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { fetchStories, type StoryListQuery, type StorySort } from '../api/stories.ts'
+import AccountBar from '../components/AccountBar.tsx'
 import HotBoard from '../components/HotBoard.tsx'
 import Notice from '../components/Notice.tsx'
 import Pagination from '../components/Pagination.tsx'
@@ -56,6 +57,10 @@ export default function StoryListPage() {
   return (
     <main className="min-h-screen bg-paper px-4 py-8 sm:px-6">
       <div className="mx-auto max-w-6xl">
+        <div className="flex justify-end pt-2">
+          <AccountBar />
+        </div>
+
         <header className="py-6 text-center sm:py-10">
           <h1 className="text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl">
             옛날 옛적에

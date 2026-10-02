@@ -2,7 +2,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { createChild, type Sentence } from '../api/sentences.ts'
+import { useMe } from '../lib/useMe.ts'
 import ConfirmDialog from './ConfirmDialog.tsx'
+import LoginNotice from './LoginNotice.tsx'
 
 const MAX_LENGTH = 100
 
@@ -13,6 +15,7 @@ export default function SentenceInput({ parent }: { parent: Sentence }) {
   const [confirming, setConfirming] = useState(false)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { data: me } = useMe()
 
   const write = useMutation({
     mutationFn: (content: string) => createChild(parent.id, content),
@@ -42,6 +45,11 @@ export default function SentenceInput({ parent }: { parent: Sentence }) {
           : '삭제된 문장 뒤에는 이어 쓸 수 없어요.'}
       </p>
     )
+  }
+
+  // 로그인 안 했거나 닉네임을 아직 안 정했으면 입력칸 대신 안내 (D-83)
+  if (!me || !me.nickname) {
+    return <LoginNotice me={me} />
   }
 
   if (!open) {

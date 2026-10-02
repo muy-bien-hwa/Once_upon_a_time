@@ -17,6 +17,19 @@ class Settings(BaseSettings):
     # 3단계(구글 로그인)에서 삭제 (운영 서버에 남으면 누구나 이 유저가 됨)
     dev_user_id: int | None = None
 
+    # 구글 로그인 (3단계, F-06) — 값은 .env에만 (구글 콘솔에서 발급)
+    google_client_id: str = ""
+    google_client_secret: SecretStr = SecretStr("")
+    # 로그인 쿠키(JWT)에 서명할 비밀 문자열
+    jwt_secret: SecretStr = SecretStr("")
+    # 로그인 후 돌아갈 화면 주소 (개발은 프론트 5173, 배포는 같은 주소라 "/")
+    frontend_origin: str = "http://localhost:5173"
+    # 구글이 로그인 끝나고 돌아올 우리 서버 주소 (구글 콘솔에 등록한 것과 글자까지 같아야 함)
+    # 개발에서 127.0.0.1로 두면 쿠키가 localhost 화면에 안 붙음 → localhost로 통일
+    backend_origin: str = "http://localhost:8000"
+    # 쿠키를 https에서만 보낼지 (개발 false, 배포 true)
+    cookie_secure: bool = False
+
     # 문장 추천 정렬 점수 설정값 (docs 04-ranking-score, D-37)
     sentence_rank_b: float = 1.0
     sentence_rank_h: float = 48.0

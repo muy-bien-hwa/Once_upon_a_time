@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.deps import CurrentUser, DbSession
+from app.deps import CurrentAuthor, DbSession
 from app.schemas.sentence import PathOut, SentenceCreate, SentenceListOut, SentenceOut, SentenceSort
 from app.services import sentences as sentence_service
 
@@ -24,7 +24,7 @@ def list_children(sentence_id: int, db: DbSession, sort: SentenceSort = "score")
 
 @router.post("/{sentence_id}/children", status_code=201)
 def add_child(
-    sentence_id: int, data: SentenceCreate, db: DbSession, user: CurrentUser
+    sentence_id: int, data: SentenceCreate, db: DbSession, user: CurrentAuthor
 ) -> SentenceOut:
     """이어 쓰기 (#8)"""
     return sentence_service.add_child(db, user, sentence_id, data.content)

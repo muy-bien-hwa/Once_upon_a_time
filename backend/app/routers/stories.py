@@ -4,7 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query
 
-from app.deps import CurrentUser, DbSession
+from app.deps import CurrentAuthor, DbSession
 from app.schemas.story import StoryCreate, StoryCreateOut, StoryListOut, StoryOut, StorySort
 from app.services import stories as story_service
 
@@ -23,7 +23,7 @@ def list_stories(
 
 
 @router.post("", status_code=201)
-def create_story(data: StoryCreate, db: DbSession, user: CurrentUser) -> StoryCreateOut:
+def create_story(data: StoryCreate, db: DbSession, user: CurrentAuthor) -> StoryCreateOut:
     """새 스토리: 제목 + 첫 문장 (#2)"""
     return story_service.create_story(db, user, data)
 

@@ -59,3 +59,19 @@ async function toApiError(response: Response): Promise<ApiError> {
   }
   return new ApiError(response.status, null, FALLBACK_MESSAGE)
 }
+
+export async function apiPut<T>(path: string, body: unknown): Promise<T> {
+  let response: Response
+  try {
+    response = await fetch(path, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+  } catch {
+    throw new ApiError(0, null, FALLBACK_MESSAGE)
+  }
+
+  if (!response.ok) throw await toApiError(response)
+  return (await response.json()) as T
+}

@@ -3,9 +3,11 @@ import logging
 from fastapi import FastAPI
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
+from starlette.middleware.sessions import SessionMiddleware
 
+from app.config import settings
 from app.db import engine
-from app.routers import sentences, stats, stories
+from app.routers import auth, me, sentences, stats, stories
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +18,17 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
     redoc_url=None,
 )
+
+# 구글 로그인 중간 단계(state)를 잠깐 보관하는 쿠키 (Authlib이 사용)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.jwt_secret.get_secret_value() or "dev-only",
+    https_only=settings.cookie_secure,
+    same_site="lax",
+)
+
+app.include_router(auth.router)
+app.include_router(me.router)
 app.include_router(stories.router)
 app.include_router(sentences.router)
 app.include_router(stats.router)

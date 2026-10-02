@@ -3,6 +3,8 @@ import { useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { createStory } from '../api/stories.ts'
 import ConfirmDialog from '../components/ConfirmDialog.tsx'
+import LoginNotice from '../components/LoginNotice.tsx'
+import { useMe } from '../lib/useMe.ts'
 
 const TITLE_MAX = 50
 const CONTENT_MAX = 100
@@ -14,6 +16,7 @@ export default function NewStoryPage() {
   const [confirming, setConfirming] = useState(false)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { data: me } = useMe()
 
   const create = useMutation({
     mutationFn: () => createStory({ title: title.trim(), content: content.trim() }),
@@ -48,6 +51,9 @@ export default function NewStoryPage() {
           제목과 첫 문장을 쓰면 다른 작가들이 뒤를 이어 씁니다.
         </p>
 
+        {!me || !me.nickname ? (
+          <LoginNotice me={me} what="스토리를 열려면" />
+        ) : (
         <form
           className="mt-6 rounded-lg bg-white p-5 shadow-paper ring-1 ring-stone-200/60"
           onSubmit={(event) => {
@@ -93,6 +99,7 @@ export default function NewStoryPage() {
             </button>
           </div>
         </form>
+        )}
 
         <ConfirmDialog
           open={confirming}
