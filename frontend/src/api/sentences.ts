@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from './client.ts'
+import { apiDelete, apiGet, apiPost, apiPut } from './client.ts'
 
 // 백엔드 app/schemas/sentence.py와 같은 모양
 export type SentenceStatus = 'active' | 'folded' | 'deleted'
@@ -15,6 +15,8 @@ export type Sentence = {
   created_at: string
   up_count: number
   down_count: number
+  // 내가 누른 표: 1 추천 · -1 비추천 · null 안 누름 (F-07)
+  my_vote: number | null
   // 이 문장 뒤에 이어진 문장 수 → 오른쪽 회색 박스 개수 (D-59)
   child_count: number
 }
@@ -39,4 +41,13 @@ export function fetchChildren(sentenceId: number, sort: SentenceSort, signal?: A
 // 이어 쓰기 (#8). 스토리 번호와 깊이는 서버가 부모 문장에서 계산
 export function createChild(sentenceId: number, content: string) {
   return apiPost<Sentence>(`/api/sentences/${sentenceId}/children`, { content })
+}
+
+// 추천(1)·비추천(-1) 누르기 / 같은 버튼을 다시 누르면 취소 (F-07)
+export function voteSentence(sentenceId: number, value: 1 | -1) {
+  return apiPut<Sentence>(`/api/sentences/${sentenceId}/vote`, { value })
+}
+
+export function cancelVote(sentenceId: number) {
+  return apiDelete<Sentence>(`/api/sentences/${sentenceId}/vote`)
 }

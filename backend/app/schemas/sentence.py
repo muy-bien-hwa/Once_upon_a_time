@@ -19,6 +19,11 @@ class SentenceCreate(BaseModel):
     content: SentenceText
 
 
+class VoteCreate(BaseModel):
+    # 1 = 추천, -1 = 비추천 (D-64)
+    value: Literal[1, -1]
+
+
 class SentenceOut(BaseModel):
     id: int
     story_id: int
@@ -31,6 +36,8 @@ class SentenceOut(BaseModel):
     created_at: datetime
     up_count: int
     down_count: int
+    # 내가 누른 표: 1 추천 · -1 비추천 · null 안 누름 (로그인 안 했으면 항상 null) (F-07)
+    my_vote: int | None
     # 이어진 문장 수 → 화면 오른쪽 회색 박스 개수 (D-59)
     child_count: int
 

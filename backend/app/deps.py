@@ -22,14 +22,27 @@ def get_db() -> Iterator[Session]:
 DbSession = Annotated[Session, Depends(get_db)]
 
 
+def find_user(db: Session, request: Request) -> User | None:
+    """쿠키(없으면 DEV_USER_ID)로 유저를 찾음. 못 찾으면 None"""
+    token = request.cookies.get(COOKIE_NAME)
+    user_id = read_token(token) if token else settings.dev_user_id
+    return db.get(User, user_id) if user_id is not None else None
+
+
+def get_optional_user(db: DbSession, request: Request) -> User | None:
+    """로그인 안 해도 되는 화면에서 씀 (로그인했으면 내 표를 함께 보여주려고)"""
+    return find_user(db, request)
+
+
+OptionalUser = Annotated[User | None, Depends(get_optional_user)]
+
+
 def get_current_user(db: DbSession, request: Request) -> User:
     """로그인한 유저 (쿠키의 로그인 표를 읽음)
 
     DEV_USER_ID 분기는 3-1 마지막 단계에서 삭제 (운영에 남으면 누구나 그 유저가 됨)
     """
-    token = request.cookies.get(COOKIE_NAME)
-    user_id = read_token(token) if token else settings.dev_user_id
-    user = db.get(User, user_id) if user_id is not None else None
+    user = find_user(db, request)
     if user is None:
         raise api_error(401, "AUTH_REQUIRED", "로그인이 필요해요")
     return user

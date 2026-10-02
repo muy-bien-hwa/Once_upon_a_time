@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import type { Sentence } from '../api/sentences.ts'
 import { formatDate, formatTimeAgo } from '../lib/time.ts'
 import SentenceText from './SentenceText.tsx'
+import VoteButtons from './VoteButtons.tsx'
 
 // 가운데 목록의 문장 박스 하나. 누르면 그 문장으로 이동해서 한 칸 더 읽음
 export default function SentenceBox({ sentence }: { sentence: Sentence }) {
@@ -14,10 +15,19 @@ export default function SentenceBox({ sentence }: { sentence: Sentence }) {
           <time dateTime={sentence.created_at} title={formatDate(sentence.created_at)}>
             {formatTimeAgo(sentence.created_at)}
           </time>
-          {/* 투표·신고는 3·5단계 기능 → 지금은 흐리게 표시만 (D-64) */}
-          <span className="ml-auto opacity-40">▲ {sentence.up_count}</span>
-          <span className="opacity-40">▼ {sentence.down_count}</span>
-          <span className="opacity-40">신고</span>
+          <span className="ml-auto flex items-center gap-1">
+            {sentence.status === 'active' ? (
+              <VoteButtons sentence={sentence} />
+            ) : (
+              // 접힘·삭제된 문장에는 투표할 수 없음 (D-82)
+              <>
+                <span className="opacity-40">▲ {sentence.up_count}</span>
+                <span className="opacity-40">▼ {sentence.down_count}</span>
+              </>
+            )}
+            {/* 신고는 5단계 기능 → 지금은 흐리게 표시만 (D-64) */}
+            <span className="opacity-40">신고</span>
+          </span>
         </div>
       </article>
       <ChildCount count={sentence.child_count} />

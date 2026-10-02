@@ -34,22 +34,39 @@ _child_count = (
 )
 
 
-def fetch_sentences(db: Session, *conditions: ColumnElement[bool]) -> list[SentenceOut]:
-    """조건에 맞는 문장들을 개수 정보와 함께 가져옴 (removed는 항상 뺌)"""
+def fetch_sentences(
+    db: Session, *conditions: ColumnElement[bool], user_id: int | None = None
+) -> list[SentenceOut]:
+    """조건에 맞는 문장들을 개수 정보와 함께 가져옴 (removed는 항상 뺌)
+
+    user_id를 주면 "내가 누른 표"도 함께 붙임 (F-07)
+    """
     stmt = (
-        select(Sentence, User.nickname, _up_count, _down_count, _child_count)
+        select(Sentence, User.nickname, _up_count, _down_count, _child_count, _my_vote(user_id))
         .join(User, User.id == Sentence.author_id)
         .where(Sentence.status != "removed", *conditions)
     )
     return [
-        _to_out(sentence, nickname, up, down, children)
-        for sentence, nickname, up, down, children in db.execute(stmt)
+        _to_out(sentence, nickname, up, down, children, mine)
+        for sentence, nickname, up, down, children, mine in db.execute(stmt)
     ]
 
 
-def get_sentence(db: Session, sentence_id: int) -> SentenceOut:
+def _my_vote(user_id: int | None):
+    """그 문장에 내가 누른 표 (없으면 NULL) / 로그인 안 했으면 아무에게도 안 맞는 번호로 조회"""
+    return (
+        select(SentenceVote.value)
+        .where(
+            SentenceVote.sentence_id == Sentence.id,
+            SentenceVote.user_id == (user_id if user_id is not None else -1),
+        )
+        .scalar_subquery()
+    )
+
+
+def get_sentence(db: Session, sentence_id: int, user_id: int | None = None) -> SentenceOut:
     """문장 1개. 없거나 숨김(removed)이면 404"""
-    items = fetch_sentences(db, Sentence.id == sentence_id)
+    items = fetch_sentences(db, Sentence.id == sentence_id, user_id=user_id)
     if not items:
         raise _not_found()
     return items[0]
@@ -82,7 +99,8 @@ def list_children(
 ) -> list[SentenceOut]:
     """이어진 문장들 (#7). 삭제·접힌 문장 아래의 이어진 문장도 볼 수 있음 (D-69)"""
     get_sentence(db, parent_id)  # 없거나 숨김이면 404
-    return order_sentences(fetch_sentences(db, Sentence.parent_id == parent_id), sort, user_id)
+    items = fetch_sentences(db, Sentence.parent_id == parent_id, user_id=user_id)
+    return order_sentences(items, sort, user_id)
 
 
 def add_child(db: Session, user: User, parent_id: int, content: str) -> SentenceOut:
@@ -144,7 +162,9 @@ def _sort_key(sort: SentenceSort, user_id: int | None) -> Callable[[SentenceOut]
     )
 
 
-def _to_out(sentence: Sentence, nickname: str, up: int, down: int, children: int) -> SentenceOut:
+def _to_out(
+    sentence: Sentence, nickname: str, up: int, down: int, children: int, mine: int | None = None
+) -> SentenceOut:
     # 삭제된 문장·신고로 접힌 문장은 본문과 작성자를 보내지 않음 → 화면엔 문구만 (D-63·D-69)
     hidden = sentence.status in ("deleted", "folded")
     return SentenceOut(
@@ -159,6 +179,7 @@ def _to_out(sentence: Sentence, nickname: str, up: int, down: int, children: int
         up_count=up,
         down_count=down,
         child_count=children,
+        my_vote=mine,
     )
 
 

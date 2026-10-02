@@ -47,12 +47,17 @@ def client(db_session, seed):
     """API 호출용 클라이언트: 테스트 DB 세션을 쓰고, 로그인 유저는 seed의 작가"""
     from fastapi.testclient import TestClient
 
-    from app.deps import get_current_user, get_db
+    from app.deps import get_current_user, get_db, get_optional_user
     from app.main import app
     from app.models import User
 
+    def logged_in():
+        return db_session.get(User, seed["author"])
+
     app.dependency_overrides[get_db] = lambda: db_session
-    app.dependency_overrides[get_current_user] = lambda: db_session.get(User, seed["author"])
+    app.dependency_overrides[get_current_user] = logged_in
+    # 로그인해도 되고 안 해도 되는 화면에서도 같은 사람으로 보이게 (내 표 표시 등)
+    app.dependency_overrides[get_optional_user] = logged_in
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()

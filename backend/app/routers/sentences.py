@@ -2,9 +2,17 @@
 
 from fastapi import APIRouter
 
-from app.deps import CurrentAuthor, DbSession
-from app.schemas.sentence import PathOut, SentenceCreate, SentenceListOut, SentenceOut, SentenceSort
+from app.deps import CurrentAuthor, CurrentUser, DbSession, OptionalUser
+from app.schemas.sentence import (
+    PathOut,
+    SentenceCreate,
+    SentenceListOut,
+    SentenceOut,
+    SentenceSort,
+    VoteCreate,
+)
 from app.services import sentences as sentence_service
+from app.services import votes as vote_service
 
 router = APIRouter(prefix="/api/sentences", tags=["sentences"])
 
@@ -16,9 +24,11 @@ def get_path(sentence_id: int, db: DbSession) -> PathOut:
 
 
 @router.get("/{sentence_id}/children")
-def list_children(sentence_id: int, db: DbSession, sort: SentenceSort = "score") -> SentenceListOut:
-    """이어진 문장들 (#7)"""
-    items = sentence_service.list_children(db, sentence_id, sort, user_id=None)
+def list_children(
+    sentence_id: int, db: DbSession, user: OptionalUser, sort: SentenceSort = "score"
+) -> SentenceListOut:
+    """이어진 문장들 (#7). 로그인했으면 내가 누른 표도 함께"""
+    items = sentence_service.list_children(db, sentence_id, sort, user_id=user.id if user else None)
     return SentenceListOut(items=items)
 
 
@@ -28,3 +38,15 @@ def add_child(
 ) -> SentenceOut:
     """이어 쓰기 (#8)"""
     return sentence_service.add_child(db, user, sentence_id, data.content)
+
+
+@router.put("/{sentence_id}/vote")
+def set_vote(sentence_id: int, data: VoteCreate, db: DbSession, user: CurrentUser) -> SentenceOut:
+    """추천·비추천 누르기 (F-07)"""
+    return vote_service.set_vote(db, user, sentence_id, data.value)
+
+
+@router.delete("/{sentence_id}/vote")
+def clear_vote(sentence_id: int, db: DbSession, user: CurrentUser) -> SentenceOut:
+    """내 표 취소 (F-07)"""
+    return vote_service.clear_vote(db, user, sentence_id)
