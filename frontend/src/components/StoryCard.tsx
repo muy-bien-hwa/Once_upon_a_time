@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import type { Story } from '../api/stories.ts'
 import { formatDate, formatTimeAgo } from '../lib/time.ts'
+import RecommendButton from './RecommendButton.tsx'
 
 // 스토리 목록 카드 (D-67·D-73·D-79)
 // 제목 = 고딕 굵게 / 첫 문장 = 명조 2줄 고정 → 카드 높이가 들쭉날쭉하지 않음
@@ -46,11 +47,7 @@ export default function StoryCard({ story }: { story: Story }) {
         >
           {formatTimeAgo(story.created_at)}
         </time>
-        {/* 추천 기능(F-13, 3단계) 전까지 흐리게 표시만 (D-67)
-            누를 수 없게 두어 이 자리를 눌러도 카드 링크가 그대로 동작 */}
-        <span className="pointer-events-none ml-auto shrink-0 rounded-full border border-stone-200 px-3 py-1 tabular-nums">
-          추천 {story.recommend_count}
-        </span>
+        <RecommendButton story={story} />
       </div>
     </article>
   )

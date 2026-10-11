@@ -60,13 +60,14 @@ async function toApiError(response: Response): Promise<ApiError> {
   return new ApiError(response.status, null, FALLBACK_MESSAGE)
 }
 
-export async function apiPut<T>(path: string, body: unknown): Promise<T> {
+// body는 없을 수도 있음 (추천 누르기처럼 주소만으로 뜻이 정해지는 요청)
+export async function apiPut<T>(path: string, body?: unknown): Promise<T> {
   let response: Response
   try {
     response = await fetch(path, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body),
     })
   } catch {
     throw new ApiError(0, null, FALLBACK_MESSAGE)

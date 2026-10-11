@@ -33,6 +33,19 @@ _max_depth = (
     .scalar_subquery()
 )
 
+
+def _my_recommendation(user_id: int | None):
+    """내가 이 스토리를 추천했는지 / 로그인 안 했으면 아무에게도 안 맞는 번호로 조회 (F-13)"""
+    return (
+        select(StoryRecommendation)
+        .where(
+            StoryRecommendation.story_id == Story.id,
+            StoryRecommendation.user_id == (user_id if user_id is not None else -1),
+        )
+        .exists()
+    )
+
+
 # 정렬 (D-58): 같으면 최신순
 _SORTS = {
     "latest": (Story.created_at.desc(), Story.id.desc()),
@@ -43,20 +56,32 @@ _SORTS = {
 }
 
 
-def list_stories(db: Session, sort: StorySort, page: int, size: int) -> StoryListOut:
+def list_stories(
+    db: Session, sort: StorySort, page: int, size: int, user_id: int | None = None
+) -> StoryListOut:
     total = db.scalar(select(func.count()).select_from(Story).join(*_root_join).where(_visible))
     rows = db.execute(
-        _select_stories().order_by(*_SORTS[sort]).offset((page - 1) * size).limit(size)
+        _select_stories(user_id).order_by(*_SORTS[sort]).offset((page - 1) * size).limit(size)
     )
     return StoryListOut(items=[_to_out(row) for row in rows], page=page, size=size, total=total)
 
 
-def get_story(db: Session, story_id: int) -> StoryOut:
+def get_story(db: Session, story_id: int, user_id: int | None = None) -> StoryOut:
     """스토리 1개. 없거나 숨겨진 스토리면 404"""
-    row = db.execute(_select_stories().where(Story.id == story_id)).first()
+    row = db.execute(_select_stories(user_id).where(Story.id == story_id)).first()
     if row is None:
-        raise api_error(404, "STORY_NOT_FOUND", "없는 스토리예요")
+        raise _not_found()
     return _to_out(row)
+
+
+def find_visible_story(db: Session, story_id: int) -> tuple[Story, str]:
+    """보이는 스토리와 그 첫 문장 상태 (추천처럼 저장하기 전에 확인할 때 씀)"""
+    row = db.execute(
+        select(Story, _root.status).join(*_root_join).where(Story.id == story_id, _visible)
+    ).first()
+    if row is None:
+        raise _not_found()
+    return row[0], row[1]
 
 
 def list_stories_by_ids(db: Session, story_ids: list[int]) -> list[StoryOut]:
@@ -86,10 +111,12 @@ def create_story(db: Session, user: User, data: StoryCreate) -> StoryCreateOut:
     first = Sentence(story_id=story.id, author_id=user.id, content=data.content, depth=0)
     db.add(first)
     db.commit()
-    return StoryCreateOut(story=get_story(db, story.id), sentence=get_sentence(db, first.id))
+    return StoryCreateOut(
+        story=get_story(db, story.id, user_id=user.id), sentence=get_sentence(db, first.id)
+    )
 
 
-def _select_stories():
+def _select_stories(user_id: int | None = None):
     return (
         select(
             Story,
@@ -100,6 +127,7 @@ def _select_stories():
             _recommend_count,
             _author_count,
             _max_depth,
+            _my_recommendation(user_id),
         )
         .join(*_root_join)
         .join(User, User.id == Story.creator_id)
@@ -108,9 +136,17 @@ def _select_stories():
 
 
 def _to_out(row: Row) -> StoryOut:
-    story, root_id, root_content, root_status, creator, recommend_count, author_count, max_depth = (
-        row
-    )
+    (
+        story,
+        root_id,
+        root_content,
+        root_status,
+        creator,
+        recommend_count,
+        author_count,
+        max_depth,
+        mine,
+    ) = row
     return StoryOut(
         id=story.id,
         title=story.title,
@@ -122,5 +158,10 @@ def _to_out(row: Row) -> StoryOut:
         recommend_count=recommend_count,
         author_count=author_count,
         max_depth=max_depth,
+        my_recommendation=mine,
         created_at=story.created_at,
     )
+
+
+def _not_found():
+    return api_error(404, "STORY_NOT_FOUND", "없는 스토리예요")

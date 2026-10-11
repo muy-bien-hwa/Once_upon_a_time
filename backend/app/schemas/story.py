@@ -33,6 +33,8 @@ class StoryOut(BaseModel):
     # 스토리를 시작한 작가 = 첫 문장을 쓴 사람 (읽기 화면 정보 칸)
     creator_nickname: str
     recommend_count: int
+    # 내가 이 스토리를 추천했는지 (로그인 안 했으면 항상 false, F-13)
+    my_recommendation: bool
     # 참여한 작가 수: 이 스토리에 문장을 한 번이라도 쓴 고유 유저 (D-24·D-38)
     author_count: int
     max_depth: int

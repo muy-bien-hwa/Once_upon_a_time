@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from './client.ts'
+import { apiDelete, apiGet, apiPost, apiPut } from './client.ts'
 import type { Sentence } from './sentences.ts'
 
 // 백엔드 app/schemas/story.py와 같은 모양
@@ -14,6 +14,8 @@ export type Story = {
   // 스토리를 시작한 작가 (첫 문장을 쓴 사람)
   creator_nickname: string
   recommend_count: number
+  // 내가 이 스토리를 추천했는지 (로그인 안 했으면 항상 false, F-13)
+  my_recommendation: boolean
   author_count: number
   max_depth: number
   created_at: string
@@ -48,4 +50,14 @@ export function fetchStories(query: StoryListQuery, signal?: AbortSignal) {
     size: String(query.size),
   })
   return apiGet<StoryList>(`/api/stories?${params}`, signal)
+}
+
+
+// 추천 누르기 / 다시 누르면 취소 (F-13). 둘 다 바뀐 스토리를 돌려줌
+export function recommendStory(storyId: number) {
+  return apiPut<Story>(`/api/stories/${storyId}/recommendation`)
+}
+
+export function cancelRecommendation(storyId: number) {
+  return apiDelete<Story>(`/api/stories/${storyId}/recommendation`)
 }
