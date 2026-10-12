@@ -18,6 +18,7 @@ VOTE = text(
     "INSERT INTO sentence_votes (user_id, sentence_id, value, created_at) "
     "VALUES (:user, :sentence, :value, :when)"
 )
+ADD_STORY = text("INSERT INTO stories (title, creator_id) VALUES (:title, :author) RETURNING id")
 ADD_USER = text(
     "INSERT INTO users (provider, provider_user_id, nickname) "
     "VALUES ('google', :sub, :nickname) RETURNING id"
@@ -128,3 +129,41 @@ def test_top_sentences_skips_hidden_and_non_positive(client, db_conn, seed):
     assert [item["sentence"]["id"] for item in day] == [liked["sentence"]["id"]]
     assert day[0]["story"]["title"] == "추천받은"
     assert day[0]["vote_count"] == 1
+
+
+def other_story(client, db_conn, seed) -> tuple[int, int]:
+    """다른 사람(voter)이 만든 스토리와 그 첫 문장 → 로그인 유저가 추천·투표할 수 있음"""
+    story_id = db_conn.execute(
+        ADD_STORY, {"title": "남이 시작한 스토리", "author": seed["voter"]}
+    ).scalar_one()
+    sentence_id = db_conn.execute(
+        ADD_SENTENCE,
+        {
+            "story": story_id,
+            "parent": None,
+            "author": seed["voter"],
+            "content": "다른 사람의 첫 문장이다.",
+            "depth": 0,
+        },
+    ).scalar_one()
+    return story_id, sentence_id
+
+
+def test_pressed_recommendation_shows_up_in_top_stories(client, db_conn, seed):
+    """버튼으로 누른 추천이 그대로 Hot 일간 칸에 올라옴 (3-4)"""
+    story_id, _ = other_story(client, db_conn, seed)
+
+    client.put(f"/api/stories/{story_id}/recommendation")
+
+    day = client.get("/api/stats/top-stories").json()["day"]
+    assert [(item["story"]["id"], item["recommend_count"]) for item in day] == [(story_id, 1)]
+
+
+def test_pressed_vote_shows_up_in_top_sentences(client, db_conn, seed):
+    """버튼으로 누른 추천 표가 그대로 Hot 일간 칸에 올라옴 (3-4)"""
+    _, sentence_id = other_story(client, db_conn, seed)
+
+    client.put(f"/api/sentences/{sentence_id}/vote", json={"value": 1})
+
+    day = client.get("/api/stats/top-sentences").json()["day"]
+    assert [(item["sentence"]["id"], item["vote_count"]) for item in day] == [(sentence_id, 1)]
