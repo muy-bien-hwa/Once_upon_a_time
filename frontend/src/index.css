@@ -16,6 +16,11 @@
   --color-brand-600: #2f7d5a;
   --color-brand-700: #256448;
 
+  /* Hot Top 1·2·3 메달 색 (금·은·동) — 종이 배경에서도 읽히도록 조금 어둡게 */
+  --color-medal-gold: #a97d18;
+  --color-medal-silver: #767c83;
+  --color-medal-bronze: #96643a;
+
   /* 종이 색 배경 (흰 카드가 떠 보이도록) */
   --color-paper: #f7f4ee;
 

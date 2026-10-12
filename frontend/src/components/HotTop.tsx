@@ -24,25 +24,40 @@ export function HotTopStories() {
 
   return (
     <Columns data={data} isPending={isPending} empty="아직 추천받은 스토리가 없어요">
-      {(item: HotStory, rank: number) => (
-        <li key={item.story.id}>
-          <Link to={`/s/${item.story.first_sentence_id}`} className="flex items-baseline gap-2 py-1">
-            <span className="w-3 shrink-0 text-[13px] font-bold text-stone-400 tabular-nums">
-              {rank}
-            </span>
-            <span className="min-w-0 flex-1 truncate font-semibold text-stone-800">
-              {item.story.title}
-            </span>
-            <span className="shrink-0 text-[13px] font-semibold text-brand-700 tabular-nums">
-              추천 {item.recommend_count}
-            </span>
-          </Link>
-          <p className="ml-5 truncate text-[13px] text-stone-500">
-            작가 {authors(item.story.creator_nickname, item.story.author_count)} · 최장{' '}
-            {item.story.max_depth + 1}문장
-          </p>
-        </li>
-      )}
+      {(item: HotStory, rank: number) => {
+        const top = rank <= MEDALS.length
+        return (
+          <li key={item.story.id}>
+            <Link
+              to={`/s/${item.story.first_sentence_id}`}
+              className={`flex items-baseline gap-2 ${top ? 'py-1' : 'py-0.5'}`}
+            >
+              <Rank rank={rank} />
+              <span
+                className={`min-w-0 flex-1 truncate ${
+                  top ? 'font-semibold text-stone-800' : 'text-[13px] text-stone-600'
+                }`}
+              >
+                {item.story.title}
+              </span>
+              <span
+                className={`shrink-0 tabular-nums ${
+                  top ? 'text-[13px] font-semibold text-brand-700' : 'text-xs text-stone-500'
+                }`}
+              >
+                추천 {item.recommend_count}
+              </span>
+            </Link>
+            {/* 1·2·3등만 한 줄 더 (4·5등은 제목만) */}
+            {top && (
+              <p className="ml-6 truncate text-[13px] text-stone-500">
+                작가 {authors(item.story.creator_nickname, item.story.author_count)} · 최장{' '}
+                {item.story.max_depth + 1}문장
+              </p>
+            )}
+          </li>
+        )
+      }}
     </Columns>
   )
 }
@@ -56,28 +71,59 @@ export function HotTopSentences() {
 
   return (
     <Columns data={data} isPending={isPending} empty="아직 추천받은 문장이 없어요">
-      {(item: HotSentence, rank: number) => (
-        <li key={item.sentence.id}>
-          <Link to={`/s/${item.sentence.id}`} className="flex gap-2 py-1">
-            <span className="w-3 shrink-0 pt-0.5 text-[13px] font-bold text-stone-400 tabular-nums">
-              {rank}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate font-serif text-[15px] leading-6 text-stone-900">
-                “{item.sentence.content}”
+      {(item: HotSentence, rank: number) => {
+        const top = rank <= MEDALS.length
+        return (
+          <li key={item.sentence.id}>
+            <Link to={`/s/${item.sentence.id}`} className={`flex gap-2 ${top ? 'py-1' : 'py-0.5'}`}>
+              <Rank rank={rank} className="pt-0.5" />
+              <span className="min-w-0 flex-1">
+                <span
+                  className={`block truncate font-serif leading-6 ${
+                    top ? 'text-[15px] text-stone-900' : 'text-[13px] text-stone-600'
+                  }`}
+                >
+                  “{item.sentence.content}”
+                </span>
+                {top ? (
+                  <>
+                    <span className="block truncate text-[13px] text-stone-400">
+                      {item.story.title}
+                    </span>
+                    <span className="block text-[13px] text-stone-500">
+                      <span className="font-semibold text-brand-700 tabular-nums">
+                        추천 {item.vote_count}
+                      </span>{' '}
+                      · {item.sentence.author_nickname}
+                    </span>
+                  </>
+                ) : (
+                  <span className="block text-xs text-stone-500 tabular-nums">
+                    추천 {item.vote_count}
+                  </span>
+                )}
               </span>
-              <span className="block truncate text-[13px] text-stone-400">{item.story.title}</span>
-              <span className="block text-[13px] text-stone-500">
-                <span className="font-semibold text-brand-700 tabular-nums">
-                  추천 {item.vote_count}
-                </span>{' '}
-                · {item.sentence.author_nickname}
-              </span>
-            </span>
-          </Link>
-        </li>
-      )}
+            </Link>
+          </li>
+        )
+      }}
     </Columns>
+  )
+}
+
+// 1·2·3등은 금·은·동으로 조금 크게, 4·5등은 작은 숫자만 (PM 결정 2026-10-12)
+const MEDALS = ['text-medal-gold', 'text-medal-silver', 'text-medal-bronze']
+
+function Rank({ rank, className = '' }: { rank: number; className?: string }) {
+  const medal = MEDALS[rank - 1]
+  return (
+    <span
+      className={`w-4 shrink-0 tabular-nums ${className} ${
+        medal ? `text-base font-bold ${medal}` : 'text-xs text-stone-400'
+      }`}
+    >
+      {rank}
+    </span>
   )
 }
 
