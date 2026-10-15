@@ -7,7 +7,7 @@ const APPS: { name: string; mark: RegExp }[] = [
   { name: '네이버 앱', mark: /NAVER\(inapp/i },
   { name: '인스타그램', mark: /Instagram/i },
   { name: '페이스북', mark: /FBAN|FBAV/i },
-  { name: '라인', mark: /\bLine\// },
+  { name: '라인', mark: /\bLine\//i },
   { name: '다음', mark: /DaumApps/i },
 ]
 

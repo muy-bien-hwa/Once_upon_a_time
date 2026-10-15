@@ -16,8 +16,17 @@ STORIES_PER_DAY = 5
 SENTENCES_PER_STORY_PER_DAY = 10
 
 
+def _lock_user(db: Session, user: User) -> None:
+    """같은 사람이 거의 동시에 두 번 보내도 한 줄로 세워서 처리 (제한을 정확히 세려고)
+
+    이 요청이 끝날 때까지 그 사람의 users 줄을 잡아 둠 → 둘 다 "아직 4개"로 보고 통과하는 일이 없음
+    """
+    db.execute(select(User.id).where(User.id == user.id).with_for_update())
+
+
 def check_new_story(db: Session, user: User) -> None:
     """오늘 연 스토리가 5개가 되면 더 못 열게 막음"""
+    _lock_user(db, user)
     opened = db.scalar(
         select(func.count())
         .select_from(Story)
@@ -33,6 +42,7 @@ def check_new_story(db: Session, user: User) -> None:
 
 def check_new_sentence(db: Session, user: User, story_id: int) -> None:
     """오늘 이 스토리에 쓴 문장이 10개가 되면 더 못 쓰게 막음 (지운 문장도 셈)"""
+    _lock_user(db, user)
     written = db.scalar(
         select(func.count())
         .select_from(Sentence)

@@ -3,6 +3,7 @@
 1인 1회 · 같은 버튼을 다시 누르면 취소 · 자기 스토리에는 추천 불가 (D-54)
 """
 
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.errors import api_error
@@ -15,9 +16,15 @@ def add_recommendation(db: Session, user: User, story_id: int) -> StoryOut:
     """추천 누르기. 이미 추천했으면 그대로 둠"""
     story = _recommendable(db, user, story_id)
 
-    if db.get(StoryRecommendation, {"user_id": user.id, "story_id": story.id}) is None:
-        db.add(StoryRecommendation(user_id=user.id, story_id=story.id))
-        db.commit()
+    # 거의 동시에 두 번 눌려도 중복으로 터지지 않게 DB가 한 번에 처리 (이미 있으면 그대로)
+    db.execute(
+        insert(StoryRecommendation)
+        .values(user_id=user.id, story_id=story.id)
+        .on_conflict_do_nothing(
+            index_elements=[StoryRecommendation.user_id, StoryRecommendation.story_id]
+        )
+    )
+    db.commit()
     return get_story(db, story_id, user_id=user.id)
 
 

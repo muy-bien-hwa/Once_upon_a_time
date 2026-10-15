@@ -83,6 +83,22 @@ def test_cannot_vote_on_hidden_content(client, db_conn, other_sentence, status):
     assert response.json()["detail"]["code"] == "VOTE_NOT_ALLOWED"
 
 
+def test_cannot_vote_inside_a_hidden_story(client, db_conn, other_sentence):
+    """첫 문장을 숨기면 스토리 전체가 사라진 셈 → 그 안의 문장에도 투표할 수 없어야 함"""
+    story_id = db_conn.execute(
+        text("SELECT story_id FROM sentences WHERE id = :id"), {"id": other_sentence}
+    ).scalar_one()
+    db_conn.execute(
+        text("UPDATE sentences SET status = 'removed' WHERE story_id = :id AND parent_id IS NULL"),
+        {"id": story_id},
+    )
+
+    response = vote(client, other_sentence, 1)
+
+    assert response.status_code == 404
+    assert response.json()["detail"]["code"] == "SENTENCE_NOT_FOUND"
+
+
 def test_vote_needs_login(client, other_sentence, monkeypatch):
     from app.config import settings
     from app.deps import get_current_user

@@ -66,8 +66,13 @@ def _my_vote(user_id: int | None):
 
 
 def count_authors(db: Session) -> int:
-    """지금까지 문장을 한 번이라도 쓴 사람 수 (F-14, 지운 문장도 셈 — D-38)"""
-    return db.scalar(select(func.count(func.distinct(Sentence.author_id))))
+    """지금까지 문장을 한 번이라도 쓴 사람 수 (F-14)
+
+    지운 문장은 세고(D-38), 관리자가 숨긴 문장은 뺌 → 옆에 적히는 문장 수와 기준을 맞춤
+    """
+    return db.scalar(
+        select(func.count(func.distinct(Sentence.author_id))).where(Sentence.status != "removed")
+    )
 
 
 def count_sentences(db: Session) -> int:
