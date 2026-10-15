@@ -37,6 +37,7 @@ export default function VoteButtons({ sentence }: { sentence: Sentence }) {
       <VoteButton
         label="추천"
         mark="▲"
+        tone="up"
         count={sentence.up_count}
         active={sentence.my_vote === 1}
         busy={press.isPending}
@@ -45,6 +46,7 @@ export default function VoteButtons({ sentence }: { sentence: Sentence }) {
       <VoteButton
         label="비추천"
         mark="▼"
+        tone="down"
         count={sentence.down_count}
         active={sentence.my_vote === -1}
         busy={press.isPending}
@@ -60,9 +62,16 @@ export default function VoteButtons({ sentence }: { sentence: Sentence }) {
   )
 }
 
+// 누른 표만 색을 채움: 추천은 초록, 비추천은 빨강 (D-87, 색 구분은 PM 요청 2026-10-15)
+const PRESSED = {
+  up: 'bg-brand-600 font-medium text-white',
+  down: 'bg-down-600 font-medium text-white',
+}
+
 function VoteButton({
   label,
   mark,
+  tone,
   count,
   active,
   busy,
@@ -70,6 +79,7 @@ function VoteButton({
 }: {
   label: string
   mark: string
+  tone: 'up' | 'down'
   count: number
   active: boolean
   busy: boolean
@@ -88,7 +98,7 @@ function VoteButton({
         onPress()
       }}
       className={`relative z-10 rounded-full px-2 py-0.5 tabular-nums transition ${
-        active ? 'bg-brand-600 font-medium text-white' : 'text-stone-500 hover:bg-stone-100'
+        active ? PRESSED[tone] : 'text-stone-500 hover:bg-stone-100'
       } disabled:opacity-50`}
     >
       {mark} {count}

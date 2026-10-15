@@ -16,6 +16,9 @@
   --color-brand-600: #2f7d5a;
   --color-brand-700: #256448;
 
+  /* 비추천 강조 색: 추천(초록)과 구분되는 벽돌빛 빨강 */
+  --color-down-600: #b4453c;
+
   /* Hot Top 1·2·3 메달 색 (금·은·동) — 종이 배경에서도 읽히도록 조금 어둡게 */
   --color-medal-gold: #a97d18;
   --color-medal-silver: #767c83;
