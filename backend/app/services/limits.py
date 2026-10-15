@@ -9,12 +9,13 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.errors import api_error
-from app.models import ForumPost, Sentence, Story, User
+from app.models import ForumComment, ForumPost, Sentence, Story, User
 from app.timeutil import kst_today_start
 
 STORIES_PER_DAY = 5
 SENTENCES_PER_STORY_PER_DAY = 10
 POSTS_PER_DAY = 10
+COMMENTS_PER_DAY = 50
 
 
 def _lock_user(db: Session, user: User) -> None:
@@ -75,4 +76,20 @@ def check_new_post(db: Session, user: User) -> None:
             429,
             "DAILY_POST_LIMIT",
             f"커뮤니티 글은 하루 {POSTS_PER_DAY}개까지 쓸 수 있어요. 내일 다시 써 주세요",
+        )
+
+
+def check_new_comment(db: Session, user: User) -> None:
+    """오늘 쓴 댓글이 50개가 되면 더 못 쓰게 막음 (D-91)"""
+    _lock_user(db, user)
+    written = db.scalar(
+        select(func.count())
+        .select_from(ForumComment)
+        .where(ForumComment.author_id == user.id, ForumComment.created_at >= kst_today_start())
+    )
+    if written >= COMMENTS_PER_DAY:
+        raise api_error(
+            429,
+            "DAILY_COMMENT_LIMIT",
+            f"댓글은 하루 {COMMENTS_PER_DAY}개까지 쓸 수 있어요. 내일 다시 써 주세요",
         )

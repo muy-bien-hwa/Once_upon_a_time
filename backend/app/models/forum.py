@@ -51,7 +51,10 @@ class ForumComment(IdMixin, CreatedAtMixin, Base):
     )
 
     post_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("forum_posts.id"))
+    # 답글이 매달리는 윗 댓글. 답글의 답글도 윗 댓글에 매달아 2단으로 유지 (D-91)
     parent_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("forum_comments.id"))
     author_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
+    # 누구에게 한 말인지 (@닉네임 표시용). 닉네임이 바뀌어도 따라가도록 사람을 가리켜 둠 (D-91)
+    reply_to_user_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("users.id"))
     body: Mapped[str] = mapped_column(String(1000))
     status: Mapped[str] = mapped_column(String(10), server_default="active")

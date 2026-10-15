@@ -78,8 +78,10 @@ def get_post(db: Session, post_id: int, user_id: int | None = None) -> PostOut:
     """글 하나. 삭제됐으면 "삭제된 글입니다" (D-91)"""
     row = db.execute(_select_posts(user_id).where(ForumPost.id == post_id)).first()
     if row is None:
-        raise _gone(db, post_id)
+        raise post_gone(db, post_id)
     post = row[0]
+    # 스토리째 숨겨졌으면 그 안의 글도 보이지 않음
+    find_visible_story(db, post.story_id)
     return PostOut(**_to_summary(row).model_dump(), body=post.body)
 
 
@@ -105,7 +107,7 @@ def delete_post(db: Session, user: User, post_id: int) -> None:
     """내 글 삭제. 댓글이 있든 없든 글과 댓글이 함께 사라짐 (D-91)"""
     post = db.get(ForumPost, post_id)
     if post is None or post.status == "removed":
-        raise _gone(db, post_id)
+        raise post_gone(db, post_id)
     if post.author_id != user.id:
         raise api_error(403, "NOT_MY_POST", "내가 쓴 글만 지울 수 있어요")
 
@@ -198,7 +200,7 @@ def _to_summary(row: Row) -> PostSummary:
     )
 
 
-def _gone(db: Session, post_id: int):
+def post_gone(db: Session, post_id: int):
     """지워진 글과 아예 없는 글을 구분해서 알려 줌 (D-91)"""
     if db.scalar(select(ForumPost.id).where(ForumPost.id == post_id)) is not None:
         return api_error(404, "POST_NOT_FOUND", "삭제된 글입니다")

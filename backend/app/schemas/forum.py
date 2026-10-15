@@ -11,6 +11,10 @@ PostTitle = Annotated[
     StringConstraints(strip_whitespace=True, min_length=1, max_length=100, pattern=r"^[^\r\n]*$"),
 ]
 PostBody = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=5000)]
+# 댓글 1,000자 (D-51)
+CommentBody = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=1000)
+]
 
 # 목록 정렬: new = 최신순(기본) / hot = 점수순 (D-42·D-91)
 PostSort = Literal["new", "hot"]
@@ -59,3 +63,32 @@ class PostListOut(BaseModel):
     page: int
     size: int
     total: int
+
+
+class CommentCreate(BaseModel):
+    body: CommentBody
+    # 답글이면 그 댓글 번호 (답글에 다는 답글도 받음 → 서버가 윗 댓글로 올려 붙임, D-91)
+    parent_id: int | None = None
+
+
+class CommentOut(BaseModel):
+    id: int
+    post_id: int
+    # 답글이 매달린 윗 댓글 (null이면 맨 위 댓글)
+    parent_id: int | None
+    # 신고로 접히면 내용·작성자를 비움 (D-69와 같은 방식)
+    body: str | None
+    author_nickname: str | None
+    status: Literal["active", "folded"]
+    # 누구에게 한 말인지 (@닉네임) — 지금 닉네임으로 보냄 (D-91)
+    reply_to_nickname: str | None
+    created_at: datetime
+
+
+class CommentListOut(BaseModel):
+    items: list[CommentOut]
+
+
+class VoteCreate(BaseModel):
+    # 1 = 추천, -1 = 비추천
+    value: Literal[1, -1]

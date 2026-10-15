@@ -9,8 +9,19 @@ from typing import Annotated
 from fastapi import APIRouter, Query
 
 from app.deps import CurrentAuthor, CurrentUser, DbSession, OptionalUser
-from app.schemas.forum import PostCreate, PostListOut, PostOut, PostSort
+from app.schemas.forum import (
+    CommentCreate,
+    CommentListOut,
+    CommentOut,
+    PostCreate,
+    PostListOut,
+    PostOut,
+    PostSort,
+    VoteCreate,
+)
 from app.services import forum as forum_service
+from app.services import forum_comments as comment_service
+from app.services import forum_votes as vote_service
 
 router = APIRouter(tags=["forum"])
 
@@ -47,3 +58,36 @@ def delete_post(post_id: int, db: DbSession, user: CurrentUser) -> dict[str, str
     """내 글 삭제 (댓글도 함께 사라짐, D-91)"""
     forum_service.delete_post(db, user, post_id)
     return {"status": "deleted"}
+
+
+@router.get("/api/forum/posts/{post_id}/comments")
+def list_comments(post_id: int, db: DbSession) -> CommentListOut:
+    """글의 댓글 (맨 위 댓글 + 답글, 화면에서 2단으로 묶음)"""
+    return CommentListOut(items=comment_service.list_comments(db, post_id))
+
+
+@router.post("/api/forum/posts/{post_id}/comments", status_code=201)
+def create_comment(
+    post_id: int, data: CommentCreate, db: DbSession, user: CurrentAuthor
+) -> CommentOut:
+    """댓글·답글 쓰기 (답글의 답글도 같은 줄에 붙음, D-91)"""
+    return comment_service.create_comment(db, user, post_id, data)
+
+
+@router.delete("/api/forum/comments/{comment_id}")
+def delete_comment(comment_id: int, db: DbSession, user: CurrentUser) -> dict[str, str]:
+    """내 댓글 삭제 (맨 위 댓글이면 답글도 함께 사라짐)"""
+    comment_service.delete_comment(db, user, comment_id)
+    return {"status": "deleted"}
+
+
+@router.put("/api/forum/posts/{post_id}/vote")
+def set_vote(post_id: int, data: VoteCreate, db: DbSession, user: CurrentUser) -> PostOut:
+    """글에 추천·비추천 누르기"""
+    return vote_service.set_vote(db, user, post_id, data.value)
+
+
+@router.delete("/api/forum/posts/{post_id}/vote")
+def clear_vote(post_id: int, db: DbSession, user: CurrentUser) -> PostOut:
+    """내 표 취소"""
+    return vote_service.clear_vote(db, user, post_id)
