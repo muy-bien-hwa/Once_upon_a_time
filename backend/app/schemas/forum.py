@@ -39,8 +39,10 @@ class PostSummary(BaseModel):
 
     id: int
     story_id: int
-    title: str
-    author_nickname: str
+    # 신고로 접히면 제목·작성자·인용을 비움 (D-69와 같은 방식)
+    title: str | None
+    author_nickname: str | None
+    status: Literal["active", "folded"]
     created_at: datetime
     up_count: int
     down_count: int
@@ -55,7 +57,8 @@ class PostSummary(BaseModel):
 class PostOut(PostSummary):
     """글 하나 화면"""
 
-    body: str
+    # 접힌 글은 본문도 비움
+    body: str | None
     # 내가 이 글을 고정·해제할 수 있는지 (창시자·관리자만, D-91)
     can_pin: bool
 

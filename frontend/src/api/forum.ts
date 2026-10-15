@@ -11,8 +11,10 @@ export type QuotedSentence = {
 export type PostSummary = {
   id: number
   story_id: number
-  title: string
-  author_nickname: string
+  // 신고로 접히면 제목·작성자·본문·인용이 비어서 옴 (D-69와 같은 방식)
+  title: string | null
+  author_nickname: string | null
+  status: 'active' | 'folded'
   created_at: string
   up_count: number
   down_count: number
@@ -25,7 +27,7 @@ export type PostSummary = {
 }
 
 export type Post = PostSummary & {
-  body: string
+  body: string | null
   // 내가 이 글을 고정·해제할 수 있는지 (창시자·관리자만)
   can_pin: boolean
 }

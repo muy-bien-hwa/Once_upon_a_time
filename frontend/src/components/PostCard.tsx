@@ -8,7 +8,16 @@ import PostVote from './PostVote.tsx'
 export default function PostCard({ post }: { post: PostSummary }) {
   return (
     <article className="relative flex gap-4 rounded-lg bg-white p-4 shadow-paper ring-1 ring-stone-200/60 transition hover:shadow-paper-lift has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-brand-600 sm:p-5">
-      <PostVote post={post} />
+      {/* 접힌 글에는 투표할 수 없음 (D-82) → 점수만 흐리게 */}
+      {post.status === 'active' ? (
+        <PostVote post={post} />
+      ) : (
+        <div className="flex w-9 shrink-0 flex-col items-center text-[13px] text-stone-300">
+          <span aria-hidden>▲</span>
+          <span className="tabular-nums">{post.up_count - post.down_count}</span>
+          <span aria-hidden>▼</span>
+        </div>
+      )}
 
       <div className="min-w-0 flex-1">
         <h3 className="font-semibold tracking-tight text-stone-900">
@@ -22,7 +31,7 @@ export default function PostCard({ post }: { post: PostSummary }) {
             to={`/forum/posts/${post.id}`}
             className="after:absolute after:inset-0 after:rounded-lg focus-visible:outline-none"
           >
-            {post.title}
+            {post.title ?? '신고 처리된 글입니다.'}
           </Link>
         </h3>
 
@@ -33,10 +42,14 @@ export default function PostCard({ post }: { post: PostSummary }) {
         )}
 
         <p className="mt-2 flex flex-wrap items-center gap-1.5 text-[13px] text-stone-500">
-          <span className="font-medium text-stone-600">{post.author_nickname}</span>
-          <span aria-hidden className="text-stone-300">
-            ·
-          </span>
+          {post.author_nickname && (
+            <>
+              <span className="font-medium text-stone-600">{post.author_nickname}</span>
+              <span aria-hidden className="text-stone-300">
+                ·
+              </span>
+            </>
+          )}
           <time dateTime={post.created_at} title={formatDate(post.created_at)}>
             {formatTimeAgo(post.created_at)}
           </time>

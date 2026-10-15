@@ -171,3 +171,31 @@ def test_story_carries_the_post_count(client, story):
 
 def test_forum_of_a_missing_story_is_404(client):
     assert client.get("/api/stories/10000000/forum/posts").status_code == 404
+
+
+def test_folded_post_hides_its_content(client, db_conn, story):
+    """신고로 접힌 글은 제목·본문·작성자를 보내지 않음 (D-69와 같은 방식)"""
+    post = write_post(client, story["story"]["id"], "접힐 글").json()
+    db_conn.execute(
+        text("UPDATE forum_posts SET status = 'folded' WHERE id = :id"), {"id": post["id"]}
+    )
+
+    body = client.get(f"/api/forum/posts/{post['id']}").json()
+
+    assert (body["status"], body["title"], body["body"], body["author_nickname"]) == (
+        "folded",
+        None,
+        None,
+        None,
+    )
+
+
+def test_hidden_story_hides_its_comments(client, db_conn, story):
+    """스토리째 숨기면 그 안의 글도 댓글도 보이지 않아야 함"""
+    post = write_post(client, story["story"]["id"]).json()
+    db_conn.execute(
+        text("UPDATE sentences SET status = 'removed' WHERE id = :id"),
+        {"id": story["sentence"]["id"]},
+    )
+
+    assert client.get(f"/api/forum/posts/{post['id']}/comments").status_code == 404

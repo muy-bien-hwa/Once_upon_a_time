@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session, aliased
 
 from app.config import settings
 from app.errors import api_error
-from app.models import ForumComment, ForumPost, ForumPostVote, Sentence, User
+from app.models import ForumComment, ForumPost, ForumPostVote, Sentence, Story, User
 from app.schemas.forum import (
     PostCreate,
     PostListOut,
@@ -88,9 +88,10 @@ def get_post(db: Session, post_id: int, user_id: int | None = None) -> PostOut:
     post = row[0]
     # 스토리째 숨겨졌으면 그 안의 글도 보이지 않음
     find_visible_story(db, post.story_id)
+    summary = _to_summary(row)
     return PostOut(
-        **_to_summary(row).model_dump(),
-        body=post.body,
+        **summary.model_dump(),
+        body=None if summary.status == "folded" else post.body,
         can_pin=managers.can_pin(db, post.story_id, user_id),
     )
 
@@ -193,11 +194,14 @@ def _check_quote(db: Session, story_id: int, sentence_id: int | None) -> None:
 
 def _to_summary(row: Row) -> PostSummary:
     post, nickname, up, down, mine, comments, quote_id, quote_content = row
+    # 신고로 접힌 글은 제목·본문·작성자·인용을 보내지 않음 → 화면엔 문구만 (D-69와 같은 방식)
+    hidden = post.status == "folded"
     return PostSummary(
         id=post.id,
         story_id=post.story_id,
-        title=post.title,
-        author_nickname=nickname,
+        title=None if hidden else post.title,
+        author_nickname=None if hidden else nickname,
+        status=post.status,
         created_at=post.created_at,
         up_count=up,
         down_count=down,
@@ -205,7 +209,9 @@ def _to_summary(row: Row) -> PostSummary:
         comment_count=comments,
         pin_slot=post.pin_slot,
         quoted_sentence=(
-            QuotedSentence(id=quote_id, content=quote_content) if quote_id is not None else None
+            QuotedSentence(id=quote_id, content=quote_content)
+            if quote_id is not None and not hidden
+            else None
         ),
     )
 
@@ -225,6 +231,8 @@ def pin_post(db: Session, user: User, post_id: int) -> PostOut:
     """글 고정 (창시자·관리자만). 빈 자리가 없으면 거절"""
     post = _pinnable(db, user, post_id)
     if post.pin_slot is None:
+        # 빈 자리를 읽고 쓰는 사이에 다른 사람이 끼어들지 못하게 스토리 줄을 잠금
+        db.execute(select(Story.id).where(Story.id == post.story_id).with_for_update())
         taken = set(
             db.scalars(
                 select(ForumPost.pin_slot).where(

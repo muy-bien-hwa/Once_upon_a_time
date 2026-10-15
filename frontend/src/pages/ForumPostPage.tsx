@@ -77,7 +77,16 @@ export default function ForumPostPage() {
           <>
             <article className="mt-4 rounded-lg bg-white p-5 shadow-paper ring-1 ring-stone-200/60 sm:p-7">
               <div className="flex gap-4">
-                <PostVote post={post!} />
+                {post!.status === 'active' ? (
+                  <PostVote post={post!} />
+                ) : (
+                  // 접힌 글에는 투표할 수 없음 (D-82)
+                  <div className="flex w-9 shrink-0 flex-col items-center text-[13px] text-stone-300">
+                    <span aria-hidden>▲</span>
+                    <span className="tabular-nums">{post!.up_count - post!.down_count}</span>
+                    <span aria-hidden>▼</span>
+                  </div>
+                )}
                 <div className="min-w-0 flex-1">
                   <h1 className="text-xl font-bold tracking-tight text-stone-900 sm:text-2xl">
                     {post!.pin_slot && (
@@ -85,13 +94,19 @@ export default function ForumPostPage() {
                         고정
                       </span>
                     )}
-                    {post!.title}
+                    {post!.title ?? '신고 처리된 글입니다.'}
                   </h1>
                   <p className="mt-2 flex flex-wrap items-center gap-1.5 text-[13px] text-stone-500">
-                    <span className="font-medium text-stone-600">{post!.author_nickname}</span>
-                    <span aria-hidden className="text-stone-300">
-                      ·
-                    </span>
+                    {post!.author_nickname && (
+                      <>
+                        <span className="font-medium text-stone-600">
+                          {post!.author_nickname}
+                        </span>
+                        <span aria-hidden className="text-stone-300">
+                          ·
+                        </span>
+                      </>
+                    )}
                     <time dateTime={post!.created_at} title={formatDate(post!.created_at)}>
                       {formatTimeAgo(post!.created_at)}
                     </time>
@@ -109,8 +124,14 @@ export default function ForumPostPage() {
                 </Link>
               )}
 
-              <p className="mt-5 font-serif text-sentence whitespace-pre-wrap text-stone-800">
-                {post!.body}
+              <p
+                className={`mt-5 whitespace-pre-wrap ${
+                  post!.body
+                    ? 'font-serif text-sentence text-stone-800'
+                    : 'text-[15px] text-stone-400'
+                }`}
+              >
+                {post!.body ?? '신고가 많아 가려진 글이에요.'}
               </p>
 
               <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-stone-200 pt-4">

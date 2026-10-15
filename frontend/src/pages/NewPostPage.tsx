@@ -37,14 +37,17 @@ export default function NewPostPage() {
     queryFn: ({ signal }) => fetchPath(quoteId!, signal),
     enabled: quoteId !== undefined,
   })
-  const quote = quoteQuery.data?.items.at(-1)
+  // 주소를 고쳐 다른 스토리 문장을 인용하려 하면 인용 없이 쓰게 함 (서버도 거절함)
+  const quotedStoryId = quoteQuery.data?.story.id
+  const sameStory = quotedStoryId === undefined || quotedStoryId === id
+  const quote = sameStory ? quoteQuery.data?.items.at(-1) : undefined
 
   const write = useMutation({
     mutationFn: () =>
       createPost(id, {
         title: title.trim(),
         body: body.trim(),
-        ...(quoteId ? { quoted_sentence_id: quoteId } : {}),
+        ...(quoteId && sameStory ? { quoted_sentence_id: quoteId } : {}),
       }),
     onSuccess: (post) => {
       queryClient.invalidateQueries({ queryKey: ['posts'] })
@@ -84,6 +87,11 @@ export default function NewPostPage() {
               if (canSubmit) setConfirming(true)
             }}
           >
+            {!sameStory && (
+              <p className="mb-5 rounded-lg bg-stone-100 p-3 text-sm text-stone-500">
+                다른 스토리의 문장은 인용할 수 없어서, 인용 없이 글만 올라갑니다.
+              </p>
+            )}
             {quote && (
               <p className="mb-5 border-l-2 border-brand-600 bg-brand-50/60 py-2 pl-4 font-serif text-[15px] text-stone-700">
                 “{quote.content}”

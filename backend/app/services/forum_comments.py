@@ -13,6 +13,7 @@ from app.models import ForumComment, ForumPost, User
 from app.schemas.forum import CommentCreate, CommentOut
 from app.services import limits
 from app.services.forum import post_gone
+from app.services.stories import find_visible_story
 
 _author = aliased(User)
 _mentioned = aliased(User)
@@ -95,6 +96,8 @@ def _readable_post(db: Session, post_id: int) -> ForumPost:
     post = db.get(ForumPost, post_id)
     if post is None or post.status == "removed":
         raise post_gone(db, post_id)
+    # 스토리째 숨겨졌으면 그 안의 댓글도 보이지 않음 (글 조회와 같은 기준)
+    find_visible_story(db, post.story_id)
     return post
 
 
