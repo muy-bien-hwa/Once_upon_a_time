@@ -58,8 +58,8 @@ def test_record_picks_story_with_most_authors(client, db_conn, seed):
     assert record["author_count"] == 2
 
 
-def test_total_authors_counts_each_person_once(client, db_conn, seed):
-    """전체 참여 작가 수: 문장을 쓴 사람만, 두 번 썼어도 1명 (F-14)"""
+def test_totals_count_authors_once_and_every_sentence(client, db_conn, seed):
+    """홈 한 줄: 작가는 두 번 썼어도 1명, 문장은 쓴 만큼 모두 (F-14)"""
     story = client.post("/api/stories", json={"title": "제목", "content": "첫 문장이다."}).json()
     # 같은 사람이 한 문장 더 써도 1명, 다른 사람이 쓰면 2명
     client.post(
@@ -76,7 +76,10 @@ def test_total_authors_counts_each_person_once(client, db_conn, seed):
         },
     )
 
-    assert client.get("/api/stats/record").json()["total_authors"] == 2
+    body = client.get("/api/stats/record").json()
+
+    # 작가 2명(나·다른 사람) / 문장 3개(첫 문장 + 내가 쓴 1 + 다른 사람 1)
+    assert (body["total_authors"], body["total_sentences"]) == (2, 3)
 
 
 def readers(db_conn, count: int) -> list[int]:

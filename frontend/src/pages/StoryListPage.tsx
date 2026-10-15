@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { fetchStories, type StoryListQuery, type StorySort } from '../api/stories.ts'
 import AccountBar from '../components/AccountBar.tsx'
-import AuthorCount from '../components/AuthorCount.tsx'
+import HomeCounts from '../components/HomeCounts.tsx'
 import HotBoard from '../components/HotBoard.tsx'
 import Notice from '../components/Notice.tsx'
 import Pagination from '../components/Pagination.tsx'
@@ -66,7 +66,7 @@ export default function StoryListPage() {
           <h1 className="text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl">
             옛날 옛적에
           </h1>
-          <AuthorCount />
+          <HomeCounts />
         </header>
 
         <HotBoard />

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { copyText } from '../lib/copyText.ts'
 
 // 지금 보고 있는 문장 주소를 공유 (F-05)
 // 휴대폰: 기본 공유 창 / PC: 주소 복사 (D-64)
@@ -27,17 +28,7 @@ export default function ShareButton({ title }: { title: string }) {
       return
     }
 
-    setMessage((await copy(url)) ? '주소를 복사했어요' : '주소를 복사하지 못했어요')
-  }
-
-  async function copy(url: string) {
-    try {
-      await navigator.clipboard.writeText(url)
-      return true
-    } catch {
-      // 복사 권한이 막힌 브라우저 → 예전 방식으로 한 번 더 시도
-      return copyByTextarea(url)
-    }
+    setMessage((await copyText(url)) ? '주소를 복사했어요' : '주소를 복사하지 못했어요')
   }
 
   return (
@@ -52,18 +43,4 @@ export default function ShareButton({ title }: { title: string }) {
       </button>
     </div>
   )
-}
-
-// 화면 밖에 입력칸을 잠깐 만들어 복사 (오래된 방식이지만 대부분의 브라우저에서 동작)
-function copyByTextarea(text: string) {
-  const area = document.createElement('textarea')
-  area.value = text
-  area.readOnly = true
-  area.style.position = 'fixed'
-  area.style.opacity = '0'
-  document.body.append(area)
-  area.select()
-  const copied = document.execCommand('copy')
-  area.remove()
-  return copied
 }

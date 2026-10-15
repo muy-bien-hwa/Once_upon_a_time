@@ -70,6 +70,11 @@ def count_authors(db: Session) -> int:
     return db.scalar(select(func.count(func.distinct(Sentence.author_id))))
 
 
+def count_sentences(db: Session) -> int:
+    """지금까지 쌓인 문장 수 (F-14, 관리자가 숨긴 문장은 뺌)"""
+    return db.scalar(select(func.count()).select_from(Sentence).where(Sentence.status != "removed"))
+
+
 def get_sentence(db: Session, sentence_id: int, user_id: int | None = None) -> SentenceOut:
     """문장 1개. 없거나 숨김(removed)이면 404"""
     items = fetch_sentences(db, Sentence.id == sentence_id, user_id=user_id)

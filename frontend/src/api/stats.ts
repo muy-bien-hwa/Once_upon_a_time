@@ -5,8 +5,9 @@ import type { Story } from './stories.ts'
 export type Record = {
   // 참여 작가가 가장 많은 스토리 / 스토리가 없으면 null
   most_authors_story: Story | null
-  // 서비스 전체에서 문장을 쓴 사람 수 (홈 제목 아래 한 줄, F-14)
+  // 홈 제목 아래 한 줄 "n명의 작가가 n개의 문장을 만들었어요" (F-14)
   total_authors: number
+  total_sentences: number
 }
 
 export type HotPeriod = 'day' | 'week' | 'month'

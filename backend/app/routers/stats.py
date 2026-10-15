@@ -17,6 +17,7 @@ def get_record(db: DbSession) -> RecordOut:
     return RecordOut(
         most_authors_story=story_service.most_authors_story(db),
         total_authors=sentence_service.count_authors(db),
+        total_sentences=sentence_service.count_sentences(db),
     )
 
 
