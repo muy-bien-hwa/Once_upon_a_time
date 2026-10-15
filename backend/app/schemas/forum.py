@@ -56,10 +56,14 @@ class PostOut(PostSummary):
     """글 하나 화면"""
 
     body: str
+    # 내가 이 글을 고정·해제할 수 있는지 (창시자·관리자만, D-91)
+    can_pin: bool
 
 
 class PostListOut(BaseModel):
     items: list[PostSummary]
+    # 이 스토리에서 내가 글을 고정할 수 있는지 (목록 전체에 한 번만)
+    can_pin: bool
     page: int
     size: int
     total: int

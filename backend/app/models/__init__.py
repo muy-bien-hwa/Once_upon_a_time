@@ -3,7 +3,7 @@ from app.models.base import Base
 from app.models.forum import ForumComment, ForumPost, ForumPostVote
 from app.models.report import Report
 from app.models.sentence import Sentence, SentenceVote
-from app.models.story import Story, StoryRecommendation
+from app.models.story import Story, StoryManager, StoryRecommendation
 from app.models.user import User
 
 __all__ = [
@@ -15,6 +15,7 @@ __all__ = [
     "Sentence",
     "SentenceVote",
     "Story",
+    "StoryManager",
     "StoryRecommendation",
     "User",
 ]

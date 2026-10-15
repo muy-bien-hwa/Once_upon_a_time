@@ -53,3 +53,22 @@ class StoryListOut(BaseModel):
 class StoryCreateOut(BaseModel):
     story: StoryOut
     sentence: SentenceOut
+
+
+class StoryAuthor(BaseModel):
+    """스토리 작가 목록의 한 줄 (D-91)"""
+
+    user_id: int
+    nickname: str
+    sentence_count: int
+    # 창시자 = 금색 만년필, 관리자 = 은색 만년필 (화면 표시)
+    is_creator: bool
+    is_manager: bool
+
+
+class StoryAuthorsOut(BaseModel):
+    items: list[StoryAuthor]
+    # 내가 관리자를 임명·해임할 수 있는지 (스토리를 시작한 작가만)
+    can_appoint: bool
+    # 내가 글을 고정할 수 있는지 (창시자 + 관리자)
+    can_pin: bool

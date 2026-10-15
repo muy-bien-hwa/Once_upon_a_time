@@ -21,7 +21,7 @@ from app.schemas.forum import (
     PostSummary,
     QuotedSentence,
 )
-from app.services import limits
+from app.services import limits, managers
 from app.services.ranking import rank_score
 from app.services.stories import find_visible_story
 from app.timeutil import kst_now
@@ -71,7 +71,13 @@ def list_posts(
     items = [_to_summary(row) for row in db.execute(_select_posts(user_id, story_id))]
     ordered = _order(items, sort)
     start = (page - 1) * size
-    return PostListOut(items=ordered[start : start + size], page=page, size=size, total=len(items))
+    return PostListOut(
+        items=ordered[start : start + size],
+        page=page,
+        size=size,
+        total=len(items),
+        can_pin=managers.can_pin(db, story_id, user_id),
+    )
 
 
 def get_post(db: Session, post_id: int, user_id: int | None = None) -> PostOut:
@@ -82,7 +88,11 @@ def get_post(db: Session, post_id: int, user_id: int | None = None) -> PostOut:
     post = row[0]
     # 스토리째 숨겨졌으면 그 안의 글도 보이지 않음
     find_visible_story(db, post.story_id)
-    return PostOut(**_to_summary(row).model_dump(), body=post.body)
+    return PostOut(
+        **_to_summary(row).model_dump(),
+        body=post.body,
+        can_pin=managers.can_pin(db, post.story_id, user_id),
+    )
 
 
 def create_post(db: Session, user: User, story_id: int, data: PostCreate) -> PostOut:
@@ -205,3 +215,47 @@ def post_gone(db: Session, post_id: int):
     if db.scalar(select(ForumPost.id).where(ForumPost.id == post_id)) is not None:
         return api_error(404, "POST_NOT_FOUND", "삭제된 글입니다")
     return api_error(404, "POST_NOT_FOUND", "없는 글이에요")
+
+
+# 고정은 스토리당 2자리 (D-42·D-91)
+PIN_SLOTS = (1, 2)
+
+
+def pin_post(db: Session, user: User, post_id: int) -> PostOut:
+    """글 고정 (창시자·관리자만). 빈 자리가 없으면 거절"""
+    post = _pinnable(db, user, post_id)
+    if post.pin_slot is None:
+        taken = set(
+            db.scalars(
+                select(ForumPost.pin_slot).where(
+                    ForumPost.story_id == post.story_id,
+                    ForumPost.pin_slot.is_not(None),
+                    ForumPost.status != "removed",
+                )
+            ).all()
+        )
+        free = next((slot for slot in PIN_SLOTS if slot not in taken), None)
+        if free is None:
+            raise api_error(409, "PIN_LIMIT", "고정은 2개까지예요. 먼저 하나를 해제해 주세요")
+        post.pin_slot = free
+        db.commit()
+    return get_post(db, post_id, user_id=user.id)
+
+
+def unpin_post(db: Session, user: User, post_id: int) -> PostOut:
+    """고정 해제 (고정되어 있지 않아도 그냥 성공)"""
+    post = _pinnable(db, user, post_id)
+    if post.pin_slot is not None:
+        post.pin_slot = None
+        db.commit()
+    return get_post(db, post_id, user_id=user.id)
+
+
+def _pinnable(db: Session, user: User, post_id: int) -> ForumPost:
+    """고정할 수 있는 글인지 (없음·삭제 404 / 권한 없음 403)"""
+    post = db.get(ForumPost, post_id)
+    if post is None or post.status == "removed":
+        raise post_gone(db, post_id)
+    find_visible_story(db, post.story_id)
+    managers.require_pin_permission(db, post.story_id, user.id)
+    return post

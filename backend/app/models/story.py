@@ -22,3 +22,15 @@ class StoryRecommendation(CreatedAtMixin, Base):
 
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), primary_key=True)
     story_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("stories.id"), primary_key=True)
+
+
+class StoryManager(CreatedAtMixin, Base):
+    """스토리 관리자 (D-91)
+
+    스토리를 시작한 작가가 임명하며, 하는 일은 커뮤니티 글 고정·해제뿐
+    """
+
+    __tablename__ = "story_managers"
+
+    story_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("stories.id"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), primary_key=True)

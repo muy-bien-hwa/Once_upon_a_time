@@ -91,3 +91,15 @@ def set_vote(post_id: int, data: VoteCreate, db: DbSession, user: CurrentUser) -
 def clear_vote(post_id: int, db: DbSession, user: CurrentUser) -> PostOut:
     """내 표 취소"""
     return vote_service.clear_vote(db, user, post_id)
+
+
+@router.put("/api/forum/posts/{post_id}/pin")
+def pin_post(post_id: int, db: DbSession, user: CurrentUser) -> PostOut:
+    """글 고정 (스토리를 시작한 작가·관리자만, D-91)"""
+    return forum_service.pin_post(db, user, post_id)
+
+
+@router.delete("/api/forum/posts/{post_id}/pin")
+def unpin_post(post_id: int, db: DbSession, user: CurrentUser) -> PostOut:
+    """고정 해제"""
+    return forum_service.unpin_post(db, user, post_id)
