@@ -25,6 +25,17 @@ export default function SentenceBox({ sentence }: { sentence: Sentence }) {
                 <span className="opacity-40">▼ {sentence.down_count}</span>
               </>
             )}
+            {/* 이 문장을 인용해 커뮤니티 글쓰기 (D-91) */}
+            {sentence.status === 'active' && (
+              <Link
+                to={`/stories/${sentence.story_id}/forum/new?quote=${sentence.id}`}
+                // 문장 박스 전체가 링크라 그 위로 올림
+                onClick={(event) => event.stopPropagation()}
+                className="relative z-10 rounded px-1.5 py-0.5 text-stone-500 hover:bg-stone-100 hover:text-brand-700"
+              >
+                글쓰기
+              </Link>
+            )}
             {/* 신고는 5단계 기능 → 지금은 흐리게 표시만 (D-64) */}
             <span className="opacity-40">신고</span>
           </span>

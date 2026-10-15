@@ -5,6 +5,8 @@ type Props = {
   title: string
   children?: ReactNode
   confirmLabel: string
+  // 기본은 "취소" (고정 확인창처럼 "아니요"가 어울릴 때 바꿔 씀, D-91)
+  cancelLabel?: string
   busyLabel?: string
   busy?: boolean
   onConfirm: () => void
@@ -18,6 +20,7 @@ export default function ConfirmDialog({
   title,
   children,
   confirmLabel,
+  cancelLabel = '취소',
   busyLabel,
   busy = false,
   onConfirm,
@@ -51,7 +54,7 @@ export default function ConfirmDialog({
           disabled={busy}
           className="rounded-lg px-3 py-2 text-sm text-stone-600 hover:bg-stone-100 disabled:opacity-50"
         >
-          취소
+          {cancelLabel}
         </button>
         <button
           type="button"

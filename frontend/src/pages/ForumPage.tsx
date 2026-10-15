@@ -1,7 +1,9 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { fetchPosts, type PostSort } from '../api/forum.ts'
 import { fetchStory } from '../api/stories.ts'
+import AuthorListDialog from '../components/AuthorListDialog.tsx'
 import Notice from '../components/Notice.tsx'
 import Pagination from '../components/Pagination.tsx'
 import PostCard from '../components/PostCard.tsx'
@@ -20,6 +22,7 @@ export default function ForumPage() {
   const id = Number(storyId)
   const validId = Number.isInteger(id) && id > 0
   const [searchParams, setSearchParams] = useSearchParams()
+  const [authorsOpen, setAuthorsOpen] = useState(false)
   const sort: PostSort = searchParams.get('sort') === 'hot' ? 'hot' : 'new'
   const page = Math.max(Number(searchParams.get('page')) || 1, 1)
 
@@ -69,9 +72,16 @@ export default function ForumPage() {
             ))}
           </div>
 
+          <button
+            type="button"
+            onClick={() => setAuthorsOpen(true)}
+            className="ml-auto rounded-full border border-stone-300 px-4 py-2 text-sm text-stone-600 transition hover:border-brand-600 hover:text-brand-700"
+          >
+            스토리 작가 목록
+          </button>
           <Link
             to={`/stories/${id}/forum/new`}
-            className="ml-auto rounded-full bg-brand-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-700"
+            className="rounded-full bg-brand-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-700"
           >
             글쓰기
           </Link>
@@ -119,6 +129,8 @@ export default function ForumPage() {
             </>
           )}
         </div>
+
+        <AuthorListDialog storyId={id} open={authorsOpen} onClose={() => setAuthorsOpen(false)} />
       </div>
     </main>
   )

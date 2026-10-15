@@ -1,10 +1,15 @@
-import { useQuery } from '@tanstack/react-query'
-import { Link, useParams } from 'react-router'
-import { fetchComments, fetchPost } from '../api/forum.ts'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router'
+import { deletePost, fetchComments, fetchPost } from '../api/forum.ts'
 import AccountBar from '../components/AccountBar.tsx'
+import CommentInput from '../components/CommentInput.tsx'
 import CommentList from '../components/CommentList.tsx'
+import ConfirmDialog from '../components/ConfirmDialog.tsx'
 import Notice from '../components/Notice.tsx'
-import { PostScore } from '../components/PostCard.tsx'
+import PinButton from '../components/PinButton.tsx'
+import PostVote from '../components/PostVote.tsx'
+import { useMe } from '../lib/useMe.ts'
 import { formatDate, formatTimeAgo } from '../lib/time.ts'
 
 // 커뮤니티 글 하나 + 댓글 (F-17·D-91)
@@ -12,6 +17,10 @@ export default function ForumPostPage() {
   const { postId } = useParams()
   const id = Number(postId)
   const validId = Number.isInteger(id) && id > 0
+  const [confirming, setConfirming] = useState(false)
+  const { data: me } = useMe()
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   const postQuery = useQuery({
     queryKey: ['post', id],
@@ -26,6 +35,19 @@ export default function ForumPostPage() {
     enabled: validId && postQuery.isSuccess,
   })
   const post = postQuery.data
+
+  const remove = useMutation({
+    mutationFn: () => deletePost(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] })
+      queryClient.invalidateQueries({ queryKey: ['story', post?.story_id] })
+      navigate(`/stories/${post?.story_id}/forum`, { replace: true })
+    },
+    onError: () => setConfirming(false),
+  })
+
+  // 닉네임은 중복이 없으므로(D-84) 이름이 같으면 내가 쓴 글
+  const mine = me?.nickname != null && me.nickname === post?.author_nickname
 
   return (
     <main className="min-h-screen bg-paper px-4 py-6 sm:px-6">
@@ -55,7 +77,7 @@ export default function ForumPostPage() {
           <>
             <article className="mt-4 rounded-lg bg-white p-5 shadow-paper ring-1 ring-stone-200/60 sm:p-7">
               <div className="flex gap-4">
-                <PostScore up={post!.up_count} down={post!.down_count} />
+                <PostVote post={post!} />
                 <div className="min-w-0 flex-1">
                   <h1 className="text-xl font-bold tracking-tight text-stone-900 sm:text-2xl">
                     {post!.pin_slot && (
@@ -90,22 +112,56 @@ export default function ForumPostPage() {
               <p className="mt-5 font-serif text-sentence whitespace-pre-wrap text-stone-800">
                 {post!.body}
               </p>
+
+              <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-stone-200 pt-4">
+                <PinButton post={post!} />
+                {mine && (
+                  <button
+                    type="button"
+                    onClick={() => setConfirming(true)}
+                    className="rounded-lg px-3 py-1.5 text-sm text-stone-500 hover:bg-stone-100 hover:text-down-600"
+                  >
+                    글 삭제
+                  </button>
+                )}
+                {remove.isError && (
+                  <span className="text-sm text-red-500">{remove.error.message}</span>
+                )}
+              </div>
             </article>
 
             <section className="mt-6 rounded-lg bg-white p-5 shadow-paper ring-1 ring-stone-200/60 sm:p-7">
               <h2 className="text-sm font-semibold text-stone-600">
                 댓글 <span className="tabular-nums">{post!.comment_count}</span>
               </h2>
+
+              <CommentInput postId={id} />
+
               <div className="mt-2">
                 {commentsQuery.isPending ? (
                   <div className="h-24 animate-pulse rounded-lg bg-stone-100" />
                 ) : commentsQuery.isError ? (
                   <Notice message={commentsQuery.error.message} />
                 ) : (
-                  <CommentList items={commentsQuery.data.items} />
+                  <CommentList postId={id} items={commentsQuery.data.items} />
                 )}
               </div>
             </section>
+
+            <ConfirmDialog
+              open={confirming}
+              title="이 글을 지울까요?"
+              confirmLabel="네"
+              cancelLabel="아니요"
+              busyLabel="지우는 중…"
+              busy={remove.isPending}
+              onConfirm={() => remove.mutate()}
+              onCancel={() => setConfirming(false)}
+            >
+              <p className="text-stone-600">
+                글과 댓글이 함께 사라지고 되돌릴 수 없어요 (D-91).
+              </p>
+            </ConfirmDialog>
           </>
         )}
       </div>

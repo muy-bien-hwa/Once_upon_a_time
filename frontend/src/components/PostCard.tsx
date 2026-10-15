@@ -1,13 +1,14 @@
 import { Link } from 'react-router'
 import type { PostSummary } from '../api/forum.ts'
 import { formatDate, formatTimeAgo } from '../lib/time.ts'
+import PostVote from './PostVote.tsx'
 
 // 커뮤니티 글 목록의 한 줄 (D-42·D-91)
 // 왼쪽 표 칸 · 가운데 제목과 인용 · 아래 작성자와 댓글 수
 export default function PostCard({ post }: { post: PostSummary }) {
   return (
     <article className="relative flex gap-4 rounded-lg bg-white p-4 shadow-paper ring-1 ring-stone-200/60 transition hover:shadow-paper-lift has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-brand-600 sm:p-5">
-      <PostScore up={post.up_count} down={post.down_count} />
+      <PostVote post={post} />
 
       <div className="min-w-0 flex-1">
         <h3 className="font-semibold tracking-tight text-stone-900">
@@ -46,18 +47,5 @@ export default function PostCard({ post }: { post: PostSummary }) {
         </p>
       </div>
     </article>
-  )
-}
-
-// 표 칸 (누르는 기능은 4-5에서)
-export function PostScore({ up, down }: { up: number; down: number }) {
-  return (
-    <div className="flex w-9 shrink-0 flex-col items-center text-[13px] text-stone-400">
-      <span aria-hidden>▲</span>
-      <span className="font-semibold text-stone-700 tabular-nums" aria-label="추천에서 비추천을 뺀 수">
-        {up - down}
-      </span>
-      <span aria-hidden>▼</span>
-    </div>
   )
 }
