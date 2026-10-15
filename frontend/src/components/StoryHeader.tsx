@@ -3,8 +3,15 @@ import type { Story } from '../api/stories.ts'
 import AccountBar from './AccountBar.tsx'
 import ShareButton from './ShareButton.tsx'
 
-// 읽기 화면 맨 위: 스토리 제목 + 탭(커뮤니티는 4단계 자리) + 스토리 정보 칸
-export default function StoryHeader({ title, story }: { title: string; story?: Story }) {
+type Props = {
+  title: string
+  story?: Story
+  // 지금 보고 있는 탭 (D-75·D-91)
+  tab?: 'read' | 'forum'
+}
+
+// 읽기·커뮤니티 공통 맨 위: 스토리 제목 + 탭 + 스토리 정보 칸
+export default function StoryHeader({ title, story, tab = 'read' }: Props) {
   return (
     <header>
       <div className="flex items-center justify-between gap-3">
@@ -18,14 +25,13 @@ export default function StoryHeader({ title, story }: { title: string; story?: S
         <ShareButton title={title} />
       </div>
 
-      {/* 탭: 커뮤니티(스토리별 포럼, 4단계 F-17)는 자리만 */}
       <nav className="mt-4 flex gap-1 border-b border-stone-200">
-        <span className="-mb-px border-b-2 border-brand-600 px-3 py-2 text-sm font-medium text-brand-700">
+        <Tab to={story && `/s/${story.first_sentence_id}`} active={tab === 'read'}>
           읽기
-        </span>
-        <span className="px-3 py-2 text-sm text-stone-400" title="커뮤니티는 준비 중이에요">
-          커뮤니티
-        </span>
+        </Tab>
+        <Tab to={story && `/stories/${story.id}/forum`} active={tab === 'forum'}>
+          커뮤니티{story && story.post_count > 0 && <> {story.post_count}</>}
+        </Tab>
       </nav>
 
       <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-2 rounded-lg bg-white px-4 py-3 text-sm shadow-paper ring-1 ring-stone-200/60">
@@ -35,6 +41,32 @@ export default function StoryHeader({ title, story }: { title: string; story?: S
         <Item label="추천" value={story && `${story.recommend_count}`} />
       </dl>
     </header>
+  )
+}
+
+function Tab({
+  to,
+  active,
+  children,
+}: {
+  to?: string
+  active: boolean
+  children: React.ReactNode
+}) {
+  const style = 'px-3 py-2 text-sm tabular-nums'
+  if (active) {
+    return (
+      <span className={`${style} -mb-px border-b-2 border-brand-600 font-medium text-brand-700`}>
+        {children}
+      </span>
+    )
+  }
+  // 스토리 정보를 아직 못 받았으면 누를 수 없음 (어디로 갈지 모름)
+  if (!to) return <span className={`${style} text-stone-400`}>{children}</span>
+  return (
+    <Link to={to} className={`${style} text-stone-500 hover:text-stone-800`}>
+      {children}
+    </Link>
   )
 }
 

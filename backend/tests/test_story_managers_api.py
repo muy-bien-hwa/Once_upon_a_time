@@ -40,6 +40,7 @@ def write_post(client, story_id: int, title: str = "글 제목"):
 def test_author_list_shows_everyone_with_their_sentence_count(client, story, seed):
     body = authors(client, story["id"])
 
+    # 창시자가 맨 위 (PM 결정 2026-10-15)
     assert [
         (item["nickname"], item["sentence_count"], item["is_creator"]) for item in body["items"]
     ] == [
@@ -151,3 +152,27 @@ def test_post_tells_whether_i_can_pin(client, db_conn, story, seed):
 
     assert client.get(f"/api/forum/posts/{post['id']}").json()["can_pin"] is False
     assert client.get(f"/api/stories/{story['id']}/forum/posts").json()["can_pin"] is False
+
+
+def test_creator_then_managers_then_contributors(client, db_conn, story, seed):
+    """줄 순서: 창시자 → 관리자 → 많이 쓴 순 (PM 결정 2026-10-15)"""
+    # voter가 문장을 더 써서 기여 1위가 되게 함
+    root = db_conn.execute(
+        text("SELECT id FROM sentences WHERE story_id = :id AND parent_id IS NULL"),
+        {"id": story["id"]},
+    ).scalar_one()
+    for _ in range(3):
+        db_conn.execute(
+            ADD_SENTENCE,
+            {
+                "story": story["id"],
+                "parent": root,
+                "author": seed["voter"],
+                "content": "더 쓴 문장이다.",
+            },
+        )
+
+    body = authors(client, story["id"])
+
+    # 기여는 voter가 많지만 창시자(author)가 맨 위
+    assert [item["nickname"] for item in body["items"]] == ["author", "voter"]

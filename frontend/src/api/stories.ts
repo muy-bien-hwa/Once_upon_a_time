@@ -18,6 +18,8 @@ export type Story = {
   my_recommendation: boolean
   author_count: number
   max_depth: number
+  // 커뮤니티 탭에 적는 글 개수 (F-17)
+  post_count: number
   created_at: string
 }
 

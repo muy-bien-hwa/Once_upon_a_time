@@ -16,7 +16,10 @@ from app.services.stories import find_visible_story
 
 
 def list_authors(db: Session, story_id: int, user_id: int | None = None) -> StoryAuthorsOut:
-    """그 스토리에 문장을 쓴 작가들 (많이 쓴 순) + 내가 할 수 있는 일"""
+    """그 스토리에 문장을 쓴 작가들 + 내가 할 수 있는 일
+
+    순서: 창시자(금색 만년필) → 관리자(은색 만년필) → 많이 쓴 순 (PM 결정 2026-10-15)
+    """
     story, _ = find_visible_story(db, story_id)
     manager_ids = _manager_ids(db, story_id)
 
@@ -38,6 +41,7 @@ def list_authors(db: Session, story_id: int, user_id: int | None = None) -> Stor
         )
         for author_id, nickname, count in rows
     ]
+    items.sort(key=lambda a: (not a.is_creator, not a.is_manager, -a.sentence_count, a.user_id))
     return StoryAuthorsOut(
         items=items,
         can_appoint=user_id is not None and user_id == story.creator_id,
