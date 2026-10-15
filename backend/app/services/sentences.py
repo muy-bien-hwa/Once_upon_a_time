@@ -10,6 +10,7 @@ from app.config import settings
 from app.errors import api_error
 from app.models import Sentence, SentenceVote, Story, User
 from app.schemas.sentence import PathOut, SentenceOut, SentenceSort, StoryRef
+from app.services import limits
 from app.services.ranking import rank_score
 from app.timeutil import kst_now
 
@@ -113,6 +114,7 @@ def add_child(db: Session, user: User, parent_id: int, content: str) -> Sentence
         raise api_error(409, "PARENT_DELETED", "삭제된 문장 뒤에는 이어 쓸 수 없어요")
     if parent.status == "folded":
         raise api_error(409, "PARENT_FOLDED", "신고 처리된 문장 뒤에는 이어 쓸 수 없어요")
+    limits.check_new_sentence(db, user, parent.story_id)
 
     # 스토리와 깊이는 요청으로 받지 않고 부모에서 계산 → 어긋날 수 없음
     child = Sentence(

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session, aliased
 from app.errors import api_error
 from app.models import Sentence, Story, StoryRecommendation, User
 from app.schemas.story import StoryCreate, StoryCreateOut, StoryListOut, StoryOut, StorySort
+from app.services import limits
 from app.services.sentences import get_sentence
 
 # 스토리의 첫 문장 (스토리당 1개, D-65) → 스토리와 1:1로 붙여서 조회
@@ -105,6 +106,8 @@ def most_authors_story(db: Session) -> StoryOut | None:
 
 def create_story(db: Session, user: User, data: StoryCreate) -> StoryCreateOut:
     """스토리와 첫 문장을 한 번에 저장 (둘 다 저장되거나 둘 다 취소)"""
+    limits.check_new_story(db, user)
+
     story = Story(title=data.title, creator_id=user.id)
     db.add(story)
     db.flush()
