@@ -58,6 +58,27 @@ def test_record_picks_story_with_most_authors(client, db_conn, seed):
     assert record["author_count"] == 2
 
 
+def test_total_authors_counts_each_person_once(client, db_conn, seed):
+    """전체 참여 작가 수: 문장을 쓴 사람만, 두 번 썼어도 1명 (F-14)"""
+    story = client.post("/api/stories", json={"title": "제목", "content": "첫 문장이다."}).json()
+    # 같은 사람이 한 문장 더 써도 1명, 다른 사람이 쓰면 2명
+    client.post(
+        f"/api/sentences/{story['sentence']['id']}/children", json={"content": "두 번째다."}
+    )
+    db_conn.execute(
+        ADD_SENTENCE,
+        {
+            "story": story["story"]["id"],
+            "parent": story["sentence"]["id"],
+            "author": seed["voter"],
+            "content": "다른 사람이 쓴 문장이다.",
+            "depth": 1,
+        },
+    )
+
+    assert client.get("/api/stats/record").json()["total_authors"] == 2
+
+
 def readers(db_conn, count: int) -> list[int]:
     """추천·투표를 남길 유저 여러 명 (1인 1표라 사람 수만큼 필요)"""
     return [

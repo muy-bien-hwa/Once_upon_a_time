@@ -65,6 +65,11 @@ def _my_vote(user_id: int | None):
     )
 
 
+def count_authors(db: Session) -> int:
+    """지금까지 문장을 한 번이라도 쓴 사람 수 (F-14, 지운 문장도 셈 — D-38)"""
+    return db.scalar(select(func.count(func.distinct(Sentence.author_id))))
+
+
 def get_sentence(db: Session, sentence_id: int, user_id: int | None = None) -> SentenceOut:
     """문장 1개. 없거나 숨김(removed)이면 404"""
     items = fetch_sentences(db, Sentence.id == sentence_id, user_id=user_id)

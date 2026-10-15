@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from app.deps import DbSession
 from app.schemas.stats import HotSentences, HotStories, RecordOut
 from app.services import hot as hot_service
+from app.services import sentences as sentence_service
 from app.services import stories as story_service
 
 router = APIRouter(prefix="/api/stats", tags=["stats"])
@@ -12,8 +13,11 @@ router = APIRouter(prefix="/api/stats", tags=["stats"])
 
 @router.get("/record")
 def get_record(db: DbSession) -> RecordOut:
-    """지금까지 기록: 참여 작가가 가장 많은 스토리 (#9)"""
-    return RecordOut(most_authors_story=story_service.most_authors_story(db))
+    """지금까지 기록: 참여 작가가 가장 많은 스토리 + 전체 참여 작가 수 (#9)"""
+    return RecordOut(
+        most_authors_story=story_service.most_authors_story(db),
+        total_authors=sentence_service.count_authors(db),
+    )
 
 
 @router.get("/top-stories")
