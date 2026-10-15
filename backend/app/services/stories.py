@@ -7,7 +7,7 @@ from sqlalchemy import Row, and_, func, select
 from sqlalchemy.orm import Session, aliased
 
 from app.errors import api_error
-from app.models import Sentence, Story, StoryRecommendation, User
+from app.models import ForumPost, Sentence, Story, StoryRecommendation, User
 from app.schemas.story import StoryCreate, StoryCreateOut, StoryListOut, StoryOut, StorySort
 from app.services import limits
 from app.services.sentences import get_sentence
@@ -26,6 +26,12 @@ _recommend_count = (
 _author_count = (
     select(func.count(func.distinct(Sentence.author_id)))
     .where(Sentence.story_id == Story.id)
+    .scalar_subquery()
+)
+# 커뮤니티 탭에 적는 글 개수 (F-17·D-91)
+_post_count = (
+    select(func.count())
+    .where(ForumPost.story_id == Story.id, ForumPost.status != "removed")
     .scalar_subquery()
 )
 _max_depth = (
@@ -130,6 +136,7 @@ def _select_stories(user_id: int | None = None):
             _recommend_count,
             _author_count,
             _max_depth,
+            _post_count,
             _my_recommendation(user_id),
         )
         .join(*_root_join)
@@ -148,6 +155,7 @@ def _to_out(row: Row) -> StoryOut:
         recommend_count,
         author_count,
         max_depth,
+        post_count,
         mine,
     ) = row
     return StoryOut(
@@ -161,6 +169,7 @@ def _to_out(row: Row) -> StoryOut:
         recommend_count=recommend_count,
         author_count=author_count,
         max_depth=max_depth,
+        post_count=post_count,
         my_recommendation=mine,
         created_at=story.created_at,
     )

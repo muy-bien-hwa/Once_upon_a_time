@@ -169,7 +169,7 @@ def _sort_key(sort: SentenceSort, user_id: int | None) -> Callable[[SentenceOut]
             down=s.down_count,
             age_hours=max((now - s.created_at).total_seconds() / 3600, 0),
             user_id=user_id,
-            sentence_id=s.id,
+            item_id=s.id,
             kst_date=kst_date,
             b=settings.sentence_rank_b,
             h=settings.sentence_rank_h,

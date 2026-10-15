@@ -7,7 +7,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.config import settings
 from app.db import engine
-from app.routers import auth, me, sentences, stats, stories
+from app.routers import auth, forum, me, sentences, stats, stories
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +32,7 @@ app.include_router(me.router)
 app.include_router(stories.router)
 app.include_router(sentences.router)
 app.include_router(stats.router)
+app.include_router(forum.router)
 
 
 @app.get("/api/health")

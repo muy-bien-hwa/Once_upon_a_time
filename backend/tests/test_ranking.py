@@ -9,7 +9,7 @@ def score(up, down, age_hours, j0=0.0, user_id=1, kst_date="2026-09-21"):
         down=down,
         age_hours=age_hours,
         user_id=user_id,
-        sentence_id=1,
+        item_id=1,
         kst_date=kst_date,
         b=1.0,
         h=48,

@@ -38,6 +38,8 @@ class StoryOut(BaseModel):
     # 참여한 작가 수: 이 스토리에 문장을 한 번이라도 쓴 고유 유저 (D-24·D-38)
     author_count: int
     max_depth: int
+    # 커뮤니티 탭에 적는 글 개수 (F-17)
+    post_count: int
     created_at: datetime
 
 

@@ -35,6 +35,11 @@ class Settings(BaseSettings):
     sentence_rank_h: float = 48.0
     sentence_rank_j0: float = 0.3
 
+    # 포럼 Hot 정렬 설정값 (같은 공식, 새 글 가산점이 24시간마다 절반 / 흔들기 없음)
+    forum_rank_b: float = 1.0
+    forum_rank_h: float = 24.0
+    forum_rank_j0: float = 0.0
+
     @property
     def database_url(self) -> URL:
         # URL.create가 비밀번호의 특수문자(@, :, / 등)를 알아서 처리함
