@@ -16,7 +16,7 @@ export default function SentenceBox({ sentence }: { sentence: Sentence }) {
           <time dateTime={sentence.created_at} title={formatDate(sentence.created_at)}>
             {formatTimeAgo(sentence.created_at)}
           </time>
-          <span className="ml-auto flex items-center gap-1">
+          <span className="ml-auto flex items-center gap-1.5">
             {sentence.status === 'active' ? (
               <VoteButtons sentence={sentence} />
             ) : (
@@ -34,13 +34,15 @@ export default function SentenceBox({ sentence }: { sentence: Sentence }) {
                 to={`/stories/${sentence.story_id}/forum/new?quote=${sentence.id}`}
                 // 문장 박스 전체가 링크라 그 위로 올림
                 onClick={(event) => event.stopPropagation()}
-                className="relative z-10 rounded px-1.5 py-0.5 text-stone-500 hover:bg-stone-100 hover:text-brand-700"
+                className="relative z-10 shrink-0 rounded-full border border-stone-200 px-2.5 py-0.5 text-stone-500 transition hover:border-brand-600 hover:text-brand-700"
               >
                 글쓰기
               </Link>
             )}
-            {/* 신고는 5단계 기능 → 지금은 흐리게 표시만 (D-64) */}
-            <span className="opacity-40">신고</span>
+            {/* 신고는 5-3에서 살림 → 지금은 흐리게 표시만 (D-64) */}
+            <span className="shrink-0 rounded-full border border-stone-200 px-2.5 py-0.5 text-stone-400 opacity-60">
+              신고
+            </span>
           </span>
         </div>
       </article>

@@ -7,6 +7,8 @@ type Props = {
   confirmLabel: string
   // 기본은 "취소" (고정 확인창처럼 "아니요"가 어울릴 때 바꿔 씀, D-91)
   cancelLabel?: string
+  // 안내만 할 때는 취소 버튼을 숨기고 확인 버튼 하나만 (삭제할 수 없는 문장 안내 등)
+  hideCancel?: boolean
   busyLabel?: string
   busy?: boolean
   onConfirm: () => void
@@ -21,6 +23,7 @@ export default function ConfirmDialog({
   children,
   confirmLabel,
   cancelLabel = '취소',
+  hideCancel = false,
   busyLabel,
   busy = false,
   onConfirm,
@@ -54,14 +57,16 @@ export default function ConfirmDialog({
       <h2 className="text-lg font-semibold text-stone-800">{title}</h2>
       {children && <div className="mt-3 text-sm text-stone-600">{children}</div>}
       <div className="mt-6 flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={busy}
-          className="rounded-lg px-3 py-2 text-sm text-stone-600 hover:bg-stone-100 disabled:opacity-50"
-        >
-          {cancelLabel}
-        </button>
+        {!hideCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={busy}
+            className="rounded-lg px-3 py-2 text-sm text-stone-600 hover:bg-stone-100 disabled:opacity-50"
+          >
+            {cancelLabel}
+          </button>
+        )}
         <button
           type="button"
           onClick={onConfirm}
