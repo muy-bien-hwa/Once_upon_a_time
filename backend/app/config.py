@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     # 쿠키를 https에서만 보낼지 (개발 false, 배포 true)
     cookie_secure: bool = False
 
+    # 신고가 몇 건 쌓이면 자동으로 접히는지 (D-49·D-93, .env로 조절)
+    reports_to_fold: int = 5
+
     # 문장 추천 정렬 점수 설정값 (docs 04-ranking-score, D-37)
     sentence_rank_b: float = 1.0
     sentence_rank_h: float = 48.0

@@ -9,7 +9,7 @@ from sqlalchemy import Row, select, update
 from sqlalchemy.orm import Session, aliased
 
 from app.errors import api_error
-from app.models import ForumComment, ForumPost, User
+from app.models import ForumComment, ForumPost, Report, User
 from app.schemas.forum import CommentCreate, CommentOut
 from app.services import limits
 from app.services.forum import post_gone
@@ -19,16 +19,16 @@ _author = aliased(User)
 _mentioned = aliased(User)
 
 
-def list_comments(db: Session, post_id: int) -> list[CommentOut]:
+def list_comments(db: Session, post_id: int, user_id: int | None = None) -> list[CommentOut]:
     """글의 댓글 전부 (쓴 순서대로). 화면에서 맨 위 댓글 + 답글로 묶음"""
-    _readable_post(db, post_id)
-    rows = db.execute(_select_comments().where(ForumComment.post_id == post_id)).all()
+    readable_post(db, post_id)
+    rows = db.execute(_select_comments(user_id).where(ForumComment.post_id == post_id)).all()
     return [_to_out(row) for row in sorted(rows, key=lambda r: (r[0].created_at, r[0].id))]
 
 
 def create_comment(db: Session, user: User, post_id: int, data: CommentCreate) -> CommentOut:
     """댓글·답글 쓰기"""
-    _readable_post(db, post_id)
+    readable_post(db, post_id)
     limits.check_new_comment(db, user)
     parent_id, reply_to_user_id = _resolve_parent(db, post_id, data.parent_id)
 
@@ -41,13 +41,13 @@ def create_comment(db: Session, user: User, post_id: int, data: CommentCreate) -
     )
     db.add(comment)
     db.commit()
-    return get_comment(db, comment.id)
+    return get_comment(db, comment.id, user_id=user.id)
 
 
-def get_comment(db: Session, comment_id: int) -> CommentOut:
-    row = db.execute(_select_comments().where(ForumComment.id == comment_id)).first()
+def get_comment(db: Session, comment_id: int, user_id: int | None = None) -> CommentOut:
+    row = db.execute(_select_comments(user_id).where(ForumComment.id == comment_id)).first()
     if row is None:
-        raise _comment_gone(db, comment_id)
+        raise comment_gone(db, comment_id)
     return _to_out(row)
 
 
@@ -55,7 +55,7 @@ def delete_comment(db: Session, user: User, comment_id: int) -> None:
     """내 댓글 삭제. 맨 위 댓글이면 그 아래 답글도 함께 사라짐 (D-91)"""
     comment = db.get(ForumComment, comment_id)
     if comment is None or comment.status == "removed":
-        raise _comment_gone(db, comment_id)
+        raise comment_gone(db, comment_id)
     if comment.author_id != user.id:
         raise api_error(403, "NOT_MY_COMMENT", "내가 쓴 댓글만 지울 수 있어요")
 
@@ -91,7 +91,7 @@ def _resolve_parent(
     return parent.parent_id or parent.id, parent.author_id
 
 
-def _readable_post(db: Session, post_id: int) -> ForumPost:
+def readable_post(db: Session, post_id: int) -> ForumPost:
     """댓글을 보거나 쓸 수 있는 글인지 (없음·삭제 404)"""
     post = db.get(ForumPost, post_id)
     if post is None or post.status == "removed":
@@ -101,17 +101,29 @@ def _readable_post(db: Session, post_id: int) -> ForumPost:
     return post
 
 
-def _select_comments():
+def _select_comments(user_id: int | None):
     return (
-        select(ForumComment, _author.nickname, _mentioned.nickname)
+        select(ForumComment, _author.nickname, _mentioned.nickname, _my_report(user_id))
         .join(_author, _author.id == ForumComment.author_id)
         .outerjoin(_mentioned, _mentioned.id == ForumComment.reply_to_user_id)
         .where(ForumComment.status != "removed")
     )
 
 
+def _my_report(user_id: int | None):
+    """내가 이 댓글을 신고했는지 (신고 수는 아무에게도 안 보임, D-93) / 로그인 전에는 항상 false"""
+    return (
+        select(Report.id)
+        .where(
+            Report.comment_id == ForumComment.id,
+            Report.reporter_id == (user_id if user_id is not None else -1),
+        )
+        .exists()
+    )
+
+
 def _to_out(row: Row) -> CommentOut:
-    comment, nickname, mentioned = row
+    comment, nickname, mentioned, reported = row
     # 신고로 접힌 댓글은 내용과 작성자를 보내지 않음 (D-69와 같은 방식)
     hidden = comment.status == "folded"
     return CommentOut(
@@ -122,11 +134,12 @@ def _to_out(row: Row) -> CommentOut:
         author_nickname=None if hidden else nickname,
         status=comment.status,
         reply_to_nickname=mentioned,
+        reported_by_me=reported,
         created_at=comment.created_at,
     )
 
 
-def _comment_gone(db: Session, comment_id: int):
+def comment_gone(db: Session, comment_id: int):
     if db.scalar(select(ForumComment.id).where(ForumComment.id == comment_id)) is not None:
         return api_error(404, "COMMENT_NOT_FOUND", "삭제된 댓글입니다")
     return api_error(404, "COMMENT_NOT_FOUND", "없는 댓글이에요")

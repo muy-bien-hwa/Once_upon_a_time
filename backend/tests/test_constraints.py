@@ -57,9 +57,19 @@ def test_first_sentence_cannot_be_deleted(db_conn, seed):
 
 
 def test_report_needs_exactly_one_target(db_conn, seed):
-    sql = text("INSERT INTO reports (reporter_id) VALUES (:voter)")
+    sql = text("INSERT INTO reports (reporter_id, reason) VALUES (:voter, 'abuse')")
 
     assert rejected_by(db_conn, sql, seed) == "ck_reports_one_target"
+
+
+def test_report_reason_must_be_one_of_the_seven(db_conn, seed):
+    """사유 7종 밖의 값은 DB가 거부 (D-93)"""
+    sentence_id = add_sentence(db_conn, seed)
+    sql = text(
+        "INSERT INTO reports (reporter_id, sentence_id, reason) VALUES (:voter, :sentence, '아무거나')"
+    )
+
+    assert rejected_by(db_conn, sql, {**seed, "sentence": sentence_id}) == "ck_reports_reason_valid"
 
 
 def test_same_user_cannot_vote_twice(db_conn, seed):

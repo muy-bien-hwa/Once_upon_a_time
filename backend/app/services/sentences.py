@@ -3,12 +3,12 @@
 from collections.abc import Callable
 from datetime import UTC, datetime
 
-from sqlalchemy import ColumnElement, func, select
+from sqlalchemy import ColumnElement, Row, func, select
 from sqlalchemy.orm import Session, aliased
 
 from app.config import settings
 from app.errors import api_error
-from app.models import Sentence, SentenceVote, Story, User
+from app.models import Report, Sentence, SentenceVote, Story, User
 from app.schemas.sentence import PathOut, SentenceOut, SentenceSort, StoryRef
 from app.services import limits
 from app.services.ranking import rank_score
@@ -43,14 +43,19 @@ def fetch_sentences(
     user_id를 주면 "내가 누른 표"도 함께 붙임 (F-07)
     """
     stmt = (
-        select(Sentence, User.nickname, _up_count, _down_count, _child_count, _my_vote(user_id))
+        select(
+            Sentence,
+            User.nickname,
+            _up_count,
+            _down_count,
+            _child_count,
+            _my_vote(user_id),
+            _my_report(user_id),
+        )
         .join(User, User.id == Sentence.author_id)
         .where(Sentence.status != "removed", *conditions)
     )
-    return [
-        _to_out(sentence, nickname, up, down, children, mine)
-        for sentence, nickname, up, down, children, mine in db.execute(stmt)
-    ]
+    return [_to_out(row) for row in db.execute(stmt)]
 
 
 def _my_vote(user_id: int | None):
@@ -62,6 +67,18 @@ def _my_vote(user_id: int | None):
             SentenceVote.user_id == (user_id if user_id is not None else -1),
         )
         .scalar_subquery()
+    )
+
+
+def _my_report(user_id: int | None):
+    """내가 이 문장을 신고했는지 (신고 수는 아무에게도 안 보임, D-93) / 로그인 전에는 항상 false"""
+    return (
+        select(Report.id)
+        .where(
+            Report.sentence_id == Sentence.id,
+            Report.reporter_id == (user_id if user_id is not None else -1),
+        )
+        .exists()
     )
 
 
@@ -213,9 +230,8 @@ def _sort_key(sort: SentenceSort, user_id: int | None) -> Callable[[SentenceOut]
     )
 
 
-def _to_out(
-    sentence: Sentence, nickname: str, up: int, down: int, children: int, mine: int | None = None
-) -> SentenceOut:
+def _to_out(row: Row) -> SentenceOut:
+    sentence, nickname, up, down, children, mine, reported = row
     # 삭제된 문장·신고로 접힌 문장은 본문과 작성자를 보내지 않음 → 화면엔 문구만 (D-63·D-69)
     hidden = sentence.status in ("deleted", "folded")
     return SentenceOut(
@@ -231,6 +247,7 @@ def _to_out(
         down_count=down,
         child_count=children,
         my_vote=mine,
+        reported_by_me=reported,
     )
 
 

@@ -40,6 +40,8 @@ class SentenceOut(BaseModel):
     my_vote: int | None
     # 이어진 문장 수 → 화면 오른쪽 회색 박스 개수 (D-59)
     child_count: int
+    # 내가 이 문장을 신고했는지 → 버튼이 "신고했어요"로 바뀜 (신고 수는 안 보냄, D-93)
+    reported_by_me: bool
 
 
 class SentenceListOut(BaseModel):

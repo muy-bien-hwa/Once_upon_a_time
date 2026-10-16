@@ -3,6 +3,7 @@
 from fastapi import APIRouter
 
 from app.deps import CurrentAuthor, CurrentUser, DbSession, OptionalUser
+from app.schemas.report import ReportCreate, ReportOut
 from app.schemas.sentence import (
     PathOut,
     SentenceCreate,
@@ -11,6 +12,7 @@ from app.schemas.sentence import (
     SentenceSort,
     VoteCreate,
 )
+from app.services import reports as report_service
 from app.services import sentences as sentence_service
 from app.services import votes as vote_service
 
@@ -56,3 +58,12 @@ def set_vote(sentence_id: int, data: VoteCreate, db: DbSession, user: CurrentUse
 def clear_vote(sentence_id: int, db: DbSession, user: CurrentUser) -> SentenceOut:
     """내 표 취소 (F-07)"""
     return vote_service.clear_vote(db, user, sentence_id)
+
+
+@router.post("/{sentence_id}/reports", status_code=201)
+def report_sentence(
+    sentence_id: int, data: ReportCreate, db: DbSession, user: CurrentUser
+) -> ReportOut:
+    """문장 신고 (#31, F-10). 신고 수는 아무에게도 보여주지 않음 (D-93)"""
+    report_service.report_sentence(db, user, sentence_id, data)
+    return ReportOut()

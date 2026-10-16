@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session, aliased
 
 from app.config import settings
 from app.errors import api_error
-from app.models import ForumComment, ForumPost, ForumPostVote, Sentence, Story, User
+from app.models import ForumComment, ForumPost, ForumPostVote, Report, Sentence, Story, User
 from app.schemas.forum import (
     PostCreate,
     PostListOut,
@@ -55,6 +55,18 @@ def _my_vote(user_id: int | None):
             ForumPostVote.user_id == (user_id if user_id is not None else -1),
         )
         .scalar_subquery()
+    )
+
+
+def _my_report(user_id: int | None):
+    """내가 이 글을 신고했는지 (신고 수는 아무에게도 안 보임, D-93) / 로그인 전에는 항상 false"""
+    return (
+        select(Report.id)
+        .where(
+            Report.post_id == ForumPost.id,
+            Report.reporter_id == (user_id if user_id is not None else -1),
+        )
+        .exists()
     )
 
 
@@ -135,6 +147,7 @@ def _select_posts(user_id: int | None, story_id: int | None = None):
             _up_count,
             _down_count,
             _my_vote(user_id),
+            _my_report(user_id),
             _comment_count,
             _quote.id,
             _quote.content,
@@ -193,7 +206,7 @@ def _check_quote(db: Session, story_id: int, sentence_id: int | None) -> None:
 
 
 def _to_summary(row: Row) -> PostSummary:
-    post, nickname, up, down, mine, comments, quote_id, quote_content = row
+    post, nickname, up, down, mine, reported, comments, quote_id, quote_content = row
     # 신고로 접힌 글은 제목·본문·작성자·인용을 보내지 않음 → 화면엔 문구만 (D-69와 같은 방식)
     hidden = post.status == "folded"
     return PostSummary(
@@ -206,6 +219,7 @@ def _to_summary(row: Row) -> PostSummary:
         up_count=up,
         down_count=down,
         my_vote=mine,
+        reported_by_me=reported,
         comment_count=comments,
         pin_slot=post.pin_slot,
         quoted_sentence=(

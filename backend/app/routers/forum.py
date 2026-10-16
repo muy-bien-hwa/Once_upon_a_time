@@ -19,9 +19,11 @@ from app.schemas.forum import (
     PostSort,
     VoteCreate,
 )
+from app.schemas.report import ReportCreate, ReportOut
 from app.services import forum as forum_service
 from app.services import forum_comments as comment_service
 from app.services import forum_votes as vote_service
+from app.services import reports as report_service
 
 router = APIRouter(tags=["forum"])
 
@@ -61,9 +63,10 @@ def delete_post(post_id: int, db: DbSession, user: CurrentUser) -> dict[str, str
 
 
 @router.get("/api/forum/posts/{post_id}/comments")
-def list_comments(post_id: int, db: DbSession) -> CommentListOut:
+def list_comments(post_id: int, db: DbSession, user: OptionalUser) -> CommentListOut:
     """글의 댓글 (맨 위 댓글 + 답글, 화면에서 2단으로 묶음)"""
-    return CommentListOut(items=comment_service.list_comments(db, post_id))
+    items = comment_service.list_comments(db, post_id, user_id=user.id if user else None)
+    return CommentListOut(items=items)
 
 
 @router.post("/api/forum/posts/{post_id}/comments", status_code=201)
@@ -103,3 +106,19 @@ def pin_post(post_id: int, db: DbSession, user: CurrentUser) -> PostOut:
 def unpin_post(post_id: int, db: DbSession, user: CurrentUser) -> PostOut:
     """고정 해제"""
     return forum_service.unpin_post(db, user, post_id)
+
+
+@router.post("/api/forum/posts/{post_id}/reports", status_code=201)
+def report_post(post_id: int, data: ReportCreate, db: DbSession, user: CurrentUser) -> ReportOut:
+    """커뮤니티 글 신고 (#32, F-10)"""
+    report_service.report_post(db, user, post_id, data)
+    return ReportOut()
+
+
+@router.post("/api/forum/comments/{comment_id}/reports", status_code=201)
+def report_comment(
+    comment_id: int, data: ReportCreate, db: DbSession, user: CurrentUser
+) -> ReportOut:
+    """댓글 신고 (#33, F-10)"""
+    report_service.report_comment(db, user, comment_id, data)
+    return ReportOut()

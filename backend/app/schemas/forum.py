@@ -51,6 +51,8 @@ class PostSummary(BaseModel):
     comment_count: int
     # 1·2 = 고정 자리 / null = 보통 글 (스토리당 2개까지, D-91)
     pin_slot: int | None
+    # 내가 이 글을 신고했는지 → 버튼이 "신고했어요"로 바뀜 (신고 수는 안 보냄, D-93)
+    reported_by_me: bool
     quoted_sentence: QuotedSentence | None
 
 
@@ -89,6 +91,8 @@ class CommentOut(BaseModel):
     status: Literal["active", "folded"]
     # 누구에게 한 말인지 (@닉네임) — 지금 닉네임으로 보냄 (D-91)
     reply_to_nickname: str | None
+    # 내가 이 댓글을 신고했는지 (D-93)
+    reported_by_me: bool
     created_at: datetime
 
 
