@@ -40,6 +40,12 @@ def add_child(
     return sentence_service.add_child(db, user, sentence_id, data.content)
 
 
+@router.delete("/{sentence_id}")
+def delete_sentence(sentence_id: int, db: DbSession, user: CurrentUser) -> dict[str, str]:
+    """내 문장 지우기 (F-09) — "removed"(사라짐) 또는 "deleted"(자리만 남음)를 알려 줌"""
+    return {"status": sentence_service.delete_sentence(db, user, sentence_id)}
+
+
 @router.put("/{sentence_id}/vote")
 def set_vote(sentence_id: int, data: VoteCreate, db: DbSession, user: CurrentUser) -> SentenceOut:
     """추천·비추천 누르기 (F-07)"""

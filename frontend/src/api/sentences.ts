@@ -51,3 +51,8 @@ export function voteSentence(sentenceId: number, value: 1 | -1) {
 export function cancelVote(sentenceId: number) {
   return apiDelete<Sentence>(`/api/sentences/${sentenceId}/vote`)
 }
+
+// 내 문장 지우기 (F-09). "removed"(사라짐) 또는 "deleted"(자리만 남음)을 알려 줌
+export function deleteSentence(sentenceId: number) {
+  return apiDelete<{ status: string }>(`/api/sentences/${sentenceId}`)
+}

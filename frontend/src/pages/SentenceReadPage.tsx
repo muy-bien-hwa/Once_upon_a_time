@@ -1,8 +1,9 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import { fetchChildren, fetchPath, type SentenceSort } from '../api/sentences.ts'
 import { fetchStory } from '../api/stories.ts'
+import DeleteSentenceButton from '../components/DeleteSentenceButton.tsx'
 import Notice from '../components/Notice.tsx'
 import SentenceChoices from '../components/SentenceChoices.tsx'
 import StoryPages from '../components/StoryPages.tsx'
@@ -17,6 +18,7 @@ export default function SentenceReadPage() {
   const validId = Number.isInteger(id) && id > 0
   // 정렬은 주소에 넣지 않음 → 공유 주소는 깔끔하게, 문장을 옮겨 다니는 동안에는 유지
   const [sort, setSort] = useState<SentenceSort>('score')
+  const navigate = useNavigate()
 
   const pathQuery = useQuery({
     queryKey: ['path', id],
@@ -32,6 +34,8 @@ export default function SentenceReadPage() {
     queryFn: ({ signal }) => fetchStory(storyId!, signal),
     enabled: storyId !== undefined,
   })
+  // 지금 읽고 있는 문장 = 경로의 마지막 문장 (삭제 버튼·이어 쓰기가 이 문장을 기준으로 함)
+  const current = pathQuery.data?.items.at(-1)
   const childrenQuery = useQuery({
     queryKey: ['children', id, sort],
     queryFn: ({ signal }) => fetchChildren(id, sort, signal),
@@ -68,9 +72,22 @@ export default function SentenceReadPage() {
                   pathQuery.isPlaceholderData ? 'opacity-70' : ''
                 }`}
               >
-                <h2 className="mb-3 text-sm font-medium text-stone-500">
-                  지금까지 이야기 ({pathQuery.data.items.length}문장)
-                </h2>
+                <div className="mb-3 flex items-center gap-2">
+                  <h2 className="text-sm font-medium text-stone-500">
+                    지금까지 이야기 ({pathQuery.data.items.length}문장)
+                  </h2>
+                  {/* 지금 읽고 있는 문장이 내 것이면 여기서 지움 (첫 문장도 여기서, D-92) */}
+                  <span className="ml-auto">
+                    <DeleteSentenceButton
+                      sentence={current!}
+                      onDeleted={() => {
+                        // 지운 문장 자리에 머무르지 않도록 앞 문장(없으면 목록)으로
+                        const parentId = current!.parent_id
+                        navigate(parentId ? `/s/${parentId}` : '/', { replace: true })
+                      }}
+                    />
+                  </span>
+                </div>
                 <StoryPages items={pathQuery.data.items} />
               </section>
 
@@ -89,7 +106,7 @@ export default function SentenceReadPage() {
                   </Notice>
                 ) : (
                   <SentenceChoices
-                    parent={pathQuery.data.items[pathQuery.data.items.length - 1]}
+                    parent={current!}
                     items={childrenQuery.data.items}
                     sort={sort}
                     onSortChange={setSort}

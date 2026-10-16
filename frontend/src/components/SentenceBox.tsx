@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import type { Sentence } from '../api/sentences.ts'
 import { formatDate, formatTimeAgo } from '../lib/time.ts'
+import DeleteSentenceButton from './DeleteSentenceButton.tsx'
 import SentenceText from './SentenceText.tsx'
 import VoteButtons from './VoteButtons.tsx'
 
@@ -25,6 +26,8 @@ export default function SentenceBox({ sentence }: { sentence: Sentence }) {
                 <span className="opacity-40">▼ {sentence.down_count}</span>
               </>
             )}
+            {/* 내가 쓴 문장만 지울 수 있음 (F-09) */}
+            <DeleteSentenceButton sentence={sentence} small />
             {/* 이 문장을 인용해 커뮤니티 글쓰기 (D-91) */}
             {sentence.status === 'active' && (
               <Link

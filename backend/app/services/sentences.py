@@ -144,6 +144,40 @@ def add_child(db: Session, user: User, parent_id: int, content: str) -> Sentence
     return get_sentence(db, child.id)
 
 
+def delete_sentence(db: Session, user: User, sentence_id: int) -> str:
+    """내 문장 지우기 (F-09, D-06·D-47·D-92)
+
+    - 뒤에 이어진 문장이 없으면 흔적 없이 사라짐(removed)
+    - 있으면 "삭제된 문장" 자리만 남기고 뒷이야기는 유지(deleted)
+    - 첫 문장은 이어진 문장이 하나라도 있으면 아예 지울 수 없음 (지우면 스토리가 통째로 사라지므로)
+    돌려주는 값: "removed"(사라짐) 또는 "deleted"(자리만 남음)
+    """
+    # 판단하는 동안 누가 이어 쓰지 못하게 문장을 잠그고 읽음 (이어 쓰기도 같은 줄을 잠금)
+    sentence = db.scalar(select(Sentence).where(Sentence.id == sentence_id).with_for_update())
+    if sentence is None or sentence.status == "removed":
+        raise _not_found()
+    if sentence.status == "deleted":
+        raise api_error(409, "ALREADY_DELETED", "이미 지운 문장이에요")
+    if sentence.author_id != user.id:
+        raise api_error(403, "NOT_MY_SENTENCE", "내가 쓴 문장만 지울 수 있어요")
+
+    has_children = db.scalar(
+        select(_child.id)
+        .where(_child.parent_id == sentence.id, _child.status != "removed")
+        .limit(1)
+    )
+    if has_children is None:
+        # 아무도 이어 쓰지 않음 → 흔적 없이 (첫 문장이면 스토리도 목록에서 사라짐, D-92)
+        sentence.status = "removed"
+    elif sentence.parent_id is None:
+        raise api_error(409, "ROOT_HAS_CHILDREN", "이어진 문장이 있어서 첫 문장은 지울 수 없어요")
+    else:
+        sentence.status = "deleted"
+
+    db.commit()
+    return sentence.status
+
+
 def order_sentences(
     items: list[SentenceOut], sort: SentenceSort, user_id: int | None
 ) -> list[SentenceOut]:

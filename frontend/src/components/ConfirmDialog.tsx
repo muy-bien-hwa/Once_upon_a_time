@@ -38,6 +38,12 @@ export default function ConfirmDialog({
   return (
     <dialog
       ref={dialog}
+      // 확인창이 링크(문장 박스 등) 안에 들어 있을 수 있어, 클릭이 바깥으로 새지 않게 막음
+      // 브라우저가 링크를 따라가는 기본 동작까지 막아야 해서 둘 다 호출 (stopPropagation만으론 부족)
+      onClick={(event) => {
+        event.preventDefault()
+        event.stopPropagation()
+      }}
       // Esc 키 = 취소 (등록 중에는 닫지 않음)
       onCancel={(event) => {
         event.preventDefault()
