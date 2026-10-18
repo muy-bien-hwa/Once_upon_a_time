@@ -4,6 +4,7 @@ import { deleteComment, type Comment } from '../api/forum.ts'
 import { useMe } from '../lib/useMe.ts'
 import { formatDate, formatTimeAgo } from '../lib/time.ts'
 import CommentInput from './CommentInput.tsx'
+import ReportButton from './ReportButton.tsx'
 
 // 댓글 2단 (D-91)
 // 맨 위 댓글 아래에 답글이 한 칸 들어가서 쌓임 — 답글의 답글도 더 들어가지 않고 같은 칸
@@ -110,6 +111,15 @@ function CommentRow({
             삭제
           </button>
         )}
+        {/* 신고 — 내 댓글에는 버튼이 보이지 않음 (D-93) */}
+        <ReportButton
+          kind="comment"
+          id={comment.id}
+          postId={postId}
+          reported={comment.reported_by_me}
+          authorNickname={comment.author_nickname}
+          variant="text"
+        />
       </p>
 
       {remove.isError && <p className="mt-1 text-[13px] text-red-500">{remove.error.message}</p>}

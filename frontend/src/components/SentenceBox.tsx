@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import type { Sentence } from '../api/sentences.ts'
 import { formatDate, formatTimeAgo } from '../lib/time.ts'
 import DeleteSentenceButton from './DeleteSentenceButton.tsx'
+import ReportButton from './ReportButton.tsx'
 import SentenceText from './SentenceText.tsx'
 import VoteButtons from './VoteButtons.tsx'
 
@@ -39,10 +40,16 @@ export default function SentenceBox({ sentence }: { sentence: Sentence }) {
                 글쓰기
               </Link>
             )}
-            {/* 신고는 5-3에서 살림 → 지금은 흐리게 표시만 (D-64) */}
-            <span className="shrink-0 rounded-full border border-stone-200 px-2.5 py-0.5 text-stone-400 opacity-60">
-              신고
-            </span>
+            {/* 신고 (F-10) — 접힘·삭제된 문장에는 신고할 수 없음 (D-82) */}
+            {sentence.status === 'active' && (
+              <ReportButton
+                kind="sentence"
+                id={sentence.id}
+                reported={sentence.reported_by_me}
+                authorNickname={sentence.author_nickname}
+                small
+              />
+            )}
           </span>
         </div>
       </article>

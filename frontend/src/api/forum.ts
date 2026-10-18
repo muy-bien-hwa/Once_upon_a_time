@@ -23,6 +23,8 @@ export type PostSummary = {
   comment_count: number
   // 1·2 = 고정 자리 / null = 보통 글 (D-91)
   pin_slot: number | null
+  // 내가 이 글을 신고했는지 (D-93)
+  reported_by_me: boolean
   quoted_sentence: QuotedSentence | null
 }
 
@@ -50,6 +52,8 @@ export type Comment = {
   status: 'active' | 'folded'
   // 누구에게 한 말인지 (@닉네임)
   reply_to_nickname: string | null
+  // 내가 이 댓글을 신고했는지 (D-93)
+  reported_by_me: boolean
   created_at: string
 }
 

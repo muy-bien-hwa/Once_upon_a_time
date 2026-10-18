@@ -5,6 +5,7 @@ import { fetchChildren, fetchPath, type SentenceSort } from '../api/sentences.ts
 import { fetchStory } from '../api/stories.ts'
 import DeleteSentenceButton from '../components/DeleteSentenceButton.tsx'
 import Notice from '../components/Notice.tsx'
+import ReportButton from '../components/ReportButton.tsx'
 import SentenceChoices from '../components/SentenceChoices.tsx'
 import StoryPages from '../components/StoryPages.tsx'
 import StoryHeader from '../components/StoryHeader.tsx'
@@ -76,8 +77,17 @@ export default function SentenceReadPage() {
                   <h2 className="text-sm font-medium text-stone-500">
                     지금까지 이야기 ({pathQuery.data.items.length}문장)
                   </h2>
-                  {/* 지금 읽고 있는 문장이 내 것이면 여기서 지움 (첫 문장도 여기서, D-92) */}
-                  <span className="ml-auto">
+                  {/* 지금 읽고 있는 문장: 내 것이면 삭제, 남의 것이면 신고 (D-92·D-93) */}
+                  <span className="ml-auto flex items-center gap-1.5">
+                    {current!.status === 'active' && (
+                      <ReportButton
+                        kind="sentence"
+                        id={current!.id}
+                        reported={current!.reported_by_me}
+                        authorNickname={current!.author_nickname}
+                        small
+                      />
+                    )}
                     <DeleteSentenceButton
                       sentence={current!}
                       onDeleted={() => {

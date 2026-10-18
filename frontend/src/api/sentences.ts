@@ -19,6 +19,8 @@ export type Sentence = {
   my_vote: number | null
   // 이 문장 뒤에 이어진 문장 수 → 오른쪽 회색 박스 개수 (D-59)
   child_count: number
+  // 내가 이 문장을 신고했는지 → 버튼이 "신고했어요"로 바뀜 (신고 수는 안 옴, D-93)
+  reported_by_me: boolean
 }
 
 export type SentencePath = {

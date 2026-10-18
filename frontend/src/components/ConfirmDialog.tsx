@@ -11,6 +11,10 @@ type Props = {
   hideCancel?: boolean
   busyLabel?: string
   busy?: boolean
+  // 아직 고르지 않았을 때처럼, 확인 버튼만 못 누르게 할 때 (신고 창)
+  confirmDisabled?: boolean
+  // 되돌릴 수 없는 일(신고 등)은 확인 버튼을 빨간색으로
+  danger?: boolean
   onConfirm: () => void
   onCancel: () => void
 }
@@ -26,6 +30,8 @@ export default function ConfirmDialog({
   hideCancel = false,
   busyLabel,
   busy = false,
+  confirmDisabled = false,
+  danger = false,
   onConfirm,
   onCancel,
 }: Props) {
@@ -70,8 +76,10 @@ export default function ConfirmDialog({
         <button
           type="button"
           onClick={onConfirm}
-          disabled={busy}
-          className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+          disabled={busy || confirmDisabled}
+          className={`rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50 ${
+            danger ? 'bg-down-600 hover:bg-down-600/90' : 'bg-brand-600 hover:bg-brand-700'
+          }`}
         >
           {busy ? (busyLabel ?? '처리 중…') : confirmLabel}
         </button>

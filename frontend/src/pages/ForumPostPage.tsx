@@ -9,6 +9,7 @@ import ConfirmDialog from '../components/ConfirmDialog.tsx'
 import Notice from '../components/Notice.tsx'
 import PinButton from '../components/PinButton.tsx'
 import PostVote from '../components/PostVote.tsx'
+import ReportButton from '../components/ReportButton.tsx'
 import { useMe } from '../lib/useMe.ts'
 import { formatDate, formatTimeAgo } from '../lib/time.ts'
 
@@ -136,6 +137,15 @@ export default function ForumPostPage() {
 
               <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-stone-200 pt-4">
                 <PinButton post={post!} />
+                {/* 신고 — 내 글에는 버튼이 보이지 않음 (D-93) */}
+                {post!.status === 'active' && (
+                  <ReportButton
+                    kind="post"
+                    id={post!.id}
+                    reported={post!.reported_by_me}
+                    authorNickname={post!.author_nickname}
+                  />
+                )}
                 {mine && (
                   <button
                     type="button"
