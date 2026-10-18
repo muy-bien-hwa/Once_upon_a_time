@@ -28,7 +28,8 @@ backend/
 │  ├─ script.py.mako  새 마이그레이션 파일의 틀
 │  └─ versions/       마이그레이션 파일
 ├─ scripts/
-│  └─ seed.py         개발용 샘플 데이터 넣기
+│  ├─ seed.py         개발용 샘플 데이터 넣기
+│  └─ moderate.py     신고 처리 (운영자용: 목록·내용·접힘 풀기·가리기·숨기기)
 ├─ tests/             자동 테스트 (pytest, DB relay_test 사용)
 ├─ alembic.ini        Alembic 설정
 ├─ pyproject.toml     프로젝트 정보 + 필요한 패키지 목록

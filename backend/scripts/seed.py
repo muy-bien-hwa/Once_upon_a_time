@@ -1,10 +1,4 @@
-"""개발용 샘플 데이터 넣기
-
-실행 (backend 폴더에서): uv run python -m scripts.seed
-- 개발용 유저 2명이 없으면 만들고, 가짜 로그인에 쓸 id를 출력 → .env의 DEV_USER_ID에 적기
-- 스토리가 하나도 없을 때만 샘플 스토리를 넣음 → 여러 번 실행해도 중복되지 않음
-- --many: 목록 페이지 확인용 테스트 스토리 45개 추가 (이미 있으면 건너뜀)
-"""
+"""개발용 샘플 데이터 넣기"""
 
 import argparse
 from datetime import UTC, datetime, timedelta
