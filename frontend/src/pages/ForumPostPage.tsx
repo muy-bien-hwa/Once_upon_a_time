@@ -125,15 +125,12 @@ export default function ForumPostPage() {
                 </Link>
               )}
 
-              <p
-                className={`mt-5 whitespace-pre-wrap ${
-                  post!.body
-                    ? 'font-serif text-sentence text-stone-800'
-                    : 'text-[15px] text-stone-400'
-                }`}
-              >
-                {post!.body ?? '신고가 많아 가려진 글이에요.'}
-              </p>
+              {/* 접힌 글은 제목 줄에 "신고 처리된 글입니다."가 이미 있어 본문은 비움 (D-69) */}
+              {post!.body && (
+                <p className="mt-5 font-serif text-sentence whitespace-pre-wrap text-stone-800">
+                  {post!.body}
+                </p>
+              )}
 
               <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-stone-200 pt-4">
                 <PinButton post={post!} />
@@ -166,7 +163,14 @@ export default function ForumPostPage() {
                 댓글 <span className="tabular-nums">{post!.comment_count}</span>
               </h2>
 
-              <CommentInput postId={id} />
+              {/* 접힌 글에는 댓글·답글을 쓸 수 없음 (서버도 막음) */}
+              {post!.status === 'active' ? (
+                <CommentInput postId={id} />
+              ) : (
+                <p className="mt-3 rounded-lg bg-stone-100 p-3 text-[15px] text-stone-500">
+                  신고 처리된 글에는 댓글을 쓸 수 없어요.
+                </p>
+              )}
 
               <div className="mt-2">
                 {commentsQuery.isPending ? (
@@ -174,7 +178,11 @@ export default function ForumPostPage() {
                 ) : commentsQuery.isError ? (
                   <Notice message={commentsQuery.error.message} />
                 ) : (
-                  <CommentList postId={id} items={commentsQuery.data.items} />
+                  <CommentList
+                    postId={id}
+                    items={commentsQuery.data.items}
+                    canReply={post!.status === 'active'}
+                  />
                 )}
               </div>
             </section>
@@ -190,7 +198,7 @@ export default function ForumPostPage() {
               onCancel={() => setConfirming(false)}
             >
               <p className="text-stone-600">
-                글과 댓글이 함께 사라지고 되돌릴 수 없어요 (D-91).
+                글과 댓글이 함께 사라지고 되돌릴 수 없어요.
               </p>
             </ConfirmDialog>
           </>

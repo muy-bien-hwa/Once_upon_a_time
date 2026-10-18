@@ -28,7 +28,10 @@ def list_comments(db: Session, post_id: int, user_id: int | None = None) -> list
 
 def create_comment(db: Session, user: User, post_id: int, data: CommentCreate) -> CommentOut:
     """댓글·답글 쓰기"""
-    readable_post(db, post_id)
+    post = readable_post(db, post_id)
+    if post.status != "active":
+        # 내용이 가려진 글에는 댓글도 달 수 없음 (접힌 문장 뒤에 못 쓰는 것과 같은 이유, D-70·D-82)
+        raise api_error(409, "POST_NOT_ALLOWED", "신고 처리된 글에는 댓글을 쓸 수 없어요")
     limits.check_new_comment(db, user)
     parent_id, reply_to_user_id = _resolve_parent(db, post_id, data.parent_id)
 

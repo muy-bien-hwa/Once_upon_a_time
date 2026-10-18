@@ -204,6 +204,22 @@ def test_report_needs_login(client, sentence_id, monkeypatch):
     assert client.post(f"/api/sentences/{sentence_id}/reports", json=ABUSE).status_code == 401
 
 
+def test_folded_first_sentence_hides_the_story_card(client, db_conn, story, seed):
+    """첫 문장이 신고로 접히면 스토리 카드에는 내용 없이 상태만 (D-69)"""
+    root = story["sentence"]["id"]
+    # 첫 문장을 남의 것으로 바꿔야 신고할 수 있음 (자기 글은 신고 불가)
+    db_conn.execute(
+        text("UPDATE sentences SET author_id = :other WHERE id = :id"),
+        {"other": seed["voter"], "id": root},
+    )
+    pile_up(db_conn, "sentence_id", root, 4)
+
+    client.post(f"/api/sentences/{root}/reports", json=ABUSE)
+
+    card = client.get(f"/api/stories/{story['story']['id']}").json()
+    assert (card["first_sentence_status"], card["first_sentence"]) == ("folded", None)
+
+
 def test_five_reports_fold_the_post(client, db_conn, post_id):
     pile_up(db_conn, "post_id", post_id, 4)
 
@@ -271,6 +287,17 @@ def test_folded_comment_cannot_get_replies(client, db_conn, post_id, comment_id)
 
     assert response.status_code == 409
     assert response.json()["detail"]["code"] == "COMMENT_NOT_ALLOWED"
+
+
+def test_folded_post_cannot_get_comments(client, db_conn, post_id):
+    """글이 접히면 댓글도 쓸 수 없음 (접힌 문장 뒤에 못 쓰는 것과 같은 이유, D-70·D-82)"""
+    pile_up(db_conn, "post_id", post_id, 4)
+    client.post(f"/api/forum/posts/{post_id}/reports", json=ABUSE)
+
+    response = client.post(f"/api/forum/posts/{post_id}/comments", json={"body": "댓글이다."})
+
+    assert response.status_code == 409
+    assert response.json()["detail"]["code"] == "POST_NOT_ALLOWED"
 
 
 def test_comment_in_a_deleted_post_cannot_be_reported(client, db_conn, post_id, comment_id):

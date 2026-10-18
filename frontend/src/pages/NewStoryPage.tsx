@@ -112,7 +112,10 @@ export default function NewStoryPage() {
         >
           <p className="font-medium text-stone-800">{title.trim()}</p>
           <p className="mt-1 rounded-lg bg-stone-100 p-3 font-serif text-[17px] leading-relaxed text-stone-800">{content.trim()}</p>
-          <p className="mt-2 text-stone-500">제목과 첫 문장은 나중에 고치거나 지울 수 없어요.</p>
+          <p className="mt-2 text-stone-500">
+            제목과 첫 문장은 나중에 고칠 수 없어요. 아무도 이어 쓰지 않았을 때만 지울 수
+            있습니다.
+          </p>
         </ConfirmDialog>
       </div>
     </main>

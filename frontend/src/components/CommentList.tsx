@@ -8,7 +8,14 @@ import ReportButton from './ReportButton.tsx'
 
 // 댓글 2단 (D-91)
 // 맨 위 댓글 아래에 답글이 한 칸 들어가서 쌓임 — 답글의 답글도 더 들어가지 않고 같은 칸
-export default function CommentList({ postId, items }: { postId: number; items: Comment[] }) {
+type Props = {
+  postId: number
+  items: Comment[]
+  // 접힌 글에서는 답글을 달 수 없음 (서버도 막음)
+  canReply?: boolean
+}
+
+export default function CommentList({ postId, items, canReply = true }: Props) {
   // 지금 답글을 쓰고 있는 댓글 (한 번에 하나만 열림)
   const [replyTo, setReplyTo] = useState<Comment | null>(null)
 
@@ -23,7 +30,13 @@ export default function CommentList({ postId, items }: { postId: number; items: 
     <ul className="divide-y divide-stone-200">
       {roots.map((root) => (
         <li key={root.id} className="py-4">
-          <CommentRow comment={root} postId={postId} replyTo={replyTo} onReply={setReplyTo} />
+          <CommentRow
+            comment={root}
+            postId={postId}
+            replyTo={replyTo}
+            onReply={setReplyTo}
+            canReply={canReply}
+          />
 
           {repliesOf(root.id).map((reply) => (
             <div key={reply.id} className="mt-3 flex gap-2 pl-3 sm:pl-6">
@@ -36,6 +49,7 @@ export default function CommentList({ postId, items }: { postId: number; items: 
                   postId={postId}
                   replyTo={replyTo}
                   onReply={setReplyTo}
+                  canReply={canReply}
                 />
               </div>
             </div>
@@ -51,11 +65,13 @@ function CommentRow({
   postId,
   replyTo,
   onReply,
+  canReply,
 }: {
   comment: Comment
   postId: number
   replyTo: Comment | null
   onReply: (comment: Comment | null) => void
+  canReply: boolean
 }) {
   const { data: me } = useMe()
   const queryClient = useQueryClient()
@@ -94,13 +110,15 @@ function CommentRow({
         <time dateTime={comment.created_at} title={formatDate(comment.created_at)}>
           {formatTimeAgo(comment.created_at)}
         </time>
-        <button
-          type="button"
-          onClick={() => onReply(open ? null : comment)}
-          className="rounded px-1.5 py-0.5 hover:bg-stone-100 hover:text-stone-800"
-        >
-          답글
-        </button>
+        {canReply && (
+          <button
+            type="button"
+            onClick={() => onReply(open ? null : comment)}
+            className="rounded px-1.5 py-0.5 hover:bg-stone-100 hover:text-stone-800"
+          >
+            답글
+          </button>
+        )}
         {mine && (
           <button
             type="button"
