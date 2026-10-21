@@ -5,6 +5,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.middleware.sessions import SessionMiddleware
 
+from app import web
 from app.config import settings
 from app.db import engine
 from app.routers import auth, forum, me, sentences, stats, stories
@@ -45,3 +46,7 @@ def health() -> dict[str, str]:
         logger.exception("DB connection failed")
         db = "error"
     return {"status": "ok", "db": db}
+
+
+# 화면 내보내기는 맨 마지막 (API 주소가 먼저 잡히도록)
+web.mount(app)
