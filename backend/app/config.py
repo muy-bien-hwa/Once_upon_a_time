@@ -13,10 +13,6 @@ class Settings(BaseSettings):
     db_password: SecretStr
     db_name: str = "relay"
 
-    # 2단계 가짜 로그인: 이 id의 유저로 로그인한 것처럼 동작. 비우면 로그인 안 한 상태
-    # 3단계(구글 로그인)에서 삭제 (운영 서버에 남으면 누구나 이 유저가 됨)
-    dev_user_id: int | None = None
-
     # 구글 로그인 (3단계, F-06) — 값은 .env에만 (구글 콘솔에서 발급)
     google_client_id: str = ""
     google_client_secret: SecretStr = SecretStr("")

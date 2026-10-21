@@ -131,14 +131,12 @@ def test_author_count_keeps_deleted_writers(client, db_conn, story, seed):
     assert client.get(f"/api/stories/{story['story']['id']}").json()["author_count"] == 2
 
 
-def test_delete_needs_login(client, story, monkeypatch):
-    from app.config import settings
+def test_delete_needs_login(client, story):
     from app.deps import get_current_user
     from app.main import app
 
     child = write(client, story["sentence"]["id"])
     app.dependency_overrides.pop(get_current_user)
-    monkeypatch.setattr(settings, "dev_user_id", None)
     client.cookies.clear()
 
     assert client.delete(f"/api/sentences/{child['id']}").status_code == 401

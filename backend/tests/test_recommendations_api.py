@@ -78,13 +78,11 @@ def test_recommending_a_missing_story_is_404(client):
     assert response.json()["detail"]["code"] == "STORY_NOT_FOUND"
 
 
-def test_recommendation_needs_login(client, other_story, monkeypatch):
-    from app.config import settings
+def test_recommendation_needs_login(client, other_story):
     from app.deps import get_current_user
     from app.main import app
 
     app.dependency_overrides.pop(get_current_user)
-    monkeypatch.setattr(settings, "dev_user_id", None)
     client.cookies.clear()
 
     assert recommend(client, other_story).status_code == 401

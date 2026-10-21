@@ -11,15 +11,13 @@ NEW_USER = text(
 
 
 @pytest.fixture
-def fresh_login(client, db_conn, monkeypatch):
+def fresh_login(client, db_conn):
     """닉네임을 아직 안 정한 사람으로 로그인한 상태"""
-    from app.config import settings
     from app.deps import get_current_user
     from app.main import app
 
     app.dependency_overrides.pop(get_current_user)
     # 가짜 로그인이 끼어들지 않게 (테스트가 끝나면 monkeypatch가 되돌림)
-    monkeypatch.setattr(settings, "dev_user_id", None)
     user_id = db_conn.execute(NEW_USER, {"sub": "brand-new"}).scalar_one()
     client.cookies.set(COOKIE_NAME, create_token(user_id))
     return user_id

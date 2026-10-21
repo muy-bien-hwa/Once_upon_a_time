@@ -110,14 +110,12 @@ def test_folded_sentence_children_stay_readable_and_writable(client, db_conn):
     assert write(client, below, "계속 이어 쓰기").status_code == 201
 
 
-def test_write_needs_login(client, monkeypatch):
-    from app.config import settings
+def test_write_needs_login(client):
     from app.deps import get_current_user
     from app.main import app
 
     root = create_story(client)
     app.dependency_overrides.pop(get_current_user)
-    monkeypatch.setattr(settings, "dev_user_id", None)
 
     response = write(client, root, "문장")
 

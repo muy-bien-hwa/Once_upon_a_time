@@ -139,7 +139,8 @@ def main() -> None:
                 print("테스트 스토리가 이미 있어서 건너뛰었어요.")
 
         db.commit()
-        print(f".env에 적을 값 → DEV_USER_ID={dev.id}  (닉네임: {dev.nickname})")
+        # 가짜 로그인은 없앴으므로(6-1), 화면에서 내 것으로 보려면 구글로 로그인해야 함
+        print(f"개발용 작가: {dev.nickname}(id {dev.id}) · {writer.nickname}(id {writer.id})")
 
 
 if __name__ == "__main__":

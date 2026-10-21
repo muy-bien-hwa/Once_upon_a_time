@@ -75,13 +75,11 @@ def test_create_story_rejects_invalid_input(client, title, content):
     assert response.status_code == 422
 
 
-def test_create_story_needs_login(client, monkeypatch):
-    from app.config import settings
+def test_create_story_needs_login(client):
     from app.deps import get_current_user
     from app.main import app
 
     app.dependency_overrides.pop(get_current_user)
-    monkeypatch.setattr(settings, "dev_user_id", None)
 
     response = client.post("/api/stories", json={"title": "제목", "content": "문장"})
 

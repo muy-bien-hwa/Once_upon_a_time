@@ -137,13 +137,11 @@ def test_fifty_first_comment_today_is_refused(client, db_conn, post, seed):
     assert response.json()["detail"]["code"] == "DAILY_COMMENT_LIMIT"
 
 
-def test_comment_needs_login(client, post, monkeypatch):
-    from app.config import settings
+def test_comment_needs_login(client, post):
     from app.deps import get_current_user
     from app.main import app
 
     app.dependency_overrides.pop(get_current_user)
-    monkeypatch.setattr(settings, "dev_user_id", None)
     client.cookies.clear()
 
     assert comment(client, post["id"], "댓글이다.").status_code == 401

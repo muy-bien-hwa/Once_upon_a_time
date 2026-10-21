@@ -76,13 +76,11 @@ def test_my_vote_shows_up_in_the_list(client, other_post):
     assert [(item["id"], item["my_vote"]) for item in items] == [(other_post["id"], -1)]
 
 
-def test_vote_needs_login(client, other_post, monkeypatch):
-    from app.config import settings
+def test_vote_needs_login(client, other_post):
     from app.deps import get_current_user
     from app.main import app
 
     app.dependency_overrides.pop(get_current_user)
-    monkeypatch.setattr(settings, "dev_user_id", None)
     client.cookies.clear()
 
     assert vote(client, other_post["id"], 1).status_code == 401

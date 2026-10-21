@@ -55,14 +55,12 @@ def test_callback_reuses_the_same_user(client, fake_google):
     assert read_token(first.cookies[COOKIE_NAME]) == read_token(second.cookies[COOKIE_NAME])
 
 
-def test_login_cookie_is_used_for_writing(client, db_session, seed, monkeypatch):
+def test_login_cookie_is_used_for_writing(client, db_session, seed):
     """쿠키만으로 로그인한 상태가 되는지 (가짜 로그인 DEV_USER_ID 없이)"""
-    from app.config import settings
     from app.deps import get_current_user
     from app.main import app
 
     app.dependency_overrides.pop(get_current_user)
-    monkeypatch.setattr(settings, "dev_user_id", None)
     client.cookies.set(COOKIE_NAME, create_token(seed["author"]))
 
     response = client.post(

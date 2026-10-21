@@ -130,13 +130,11 @@ def test_missing_post_says_it_does_not_exist(client):
     assert response.json()["detail"]["message"] == "없는 글이에요"
 
 
-def test_writing_needs_login(client, story, monkeypatch):
-    from app.config import settings
+def test_writing_needs_login(client, story):
     from app.deps import get_current_user
     from app.main import app
 
     app.dependency_overrides.pop(get_current_user)
-    monkeypatch.setattr(settings, "dev_user_id", None)
     client.cookies.clear()
 
     assert write_post(client, story["story"]["id"]).status_code == 401

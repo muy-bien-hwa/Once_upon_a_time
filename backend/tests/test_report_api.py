@@ -192,13 +192,11 @@ def test_missing_sentence_is_not_found(client):
     assert client.post("/api/sentences/999999/reports", json=ABUSE).status_code == 404
 
 
-def test_report_needs_login(client, sentence_id, monkeypatch):
-    from app.config import settings
+def test_report_needs_login(client, sentence_id):
     from app.deps import get_current_user
     from app.main import app
 
     app.dependency_overrides.pop(get_current_user)
-    monkeypatch.setattr(settings, "dev_user_id", None)
     client.cookies.clear()
 
     assert client.post(f"/api/sentences/{sentence_id}/reports", json=ABUSE).status_code == 401
