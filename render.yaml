@@ -1,0 +1,35 @@
+# Render 배포 설정 (6-4, D-81·D-94)
+# 서버 하나가 화면(React 빌드)과 API(FastAPI)를 함께 내보냄 → 주소 1개
+# 값이 비어 있는 항목(sync: false)은 Render 화면에서 PM이 직접 넣음 — 저장소에는 올리지 않음
+services:
+  - type: web
+    name: relay-story
+    runtime: python
+    region: singapore # DB(Neon)와 같은 지역이어야 질의가 빠름
+    plan: free
+    branch: main
+    # 화면 빌드 → 서버 패키지 설치 → DB 표 만들기(한 번)
+    buildCommand: >-
+      cd frontend && npm ci && npm run build &&
+      cd ../backend && pip install uv && uv sync --frozen --no-dev &&
+      uv run alembic upgrade head
+    startCommand: >-
+      cd backend && uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
+      --proxy-headers --forwarded-allow-ips="*"
+    # 살아 있는지 확인하는 주소는 DB를 건드리지 않는 곳으로 (Neon 무료 컴퓨팅 한도 보호, D-94)
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL # Neon 접속 문자열 (비밀번호 포함)
+        sync: false
+      - key: JWT_SECRET # 로그인 표 서명값, 32자 이상
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: COOKIE_SECURE # 쿠키를 https에서만 (이 값이 "운영"이라는 뜻도 됨)
+        value: "true"
+      - key: FRONTEND_ORIGIN
+        value: https://relaystory.kr
+      - key: BACKEND_ORIGIN
+        value: https://relaystory.kr
