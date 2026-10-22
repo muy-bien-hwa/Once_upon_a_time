@@ -35,6 +35,11 @@ CSP = (
 )
 
 
+def docs_url() -> str | None:
+    """API 문서 화면 주소. 배포(https)에서는 열지 않음 — 공격할 곳을 알려 줄 이유가 없음"""
+    return None if settings.cookie_secure else "/api/docs"
+
+
 def check_settings() -> None:
     """운영 설정이 갖춰졌는지 확인. 모자라면 뜨지 않고 무엇이 빠졌는지 알려 줌"""
     secret = settings.jwt_secret.get_secret_value()

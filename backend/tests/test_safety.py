@@ -3,7 +3,7 @@
 import pytest
 
 from app.config import settings
-from app.safety import check_settings
+from app.safety import check_settings, docs_url
 
 STRONG = "a" * 32
 
@@ -82,3 +82,16 @@ def test_a_huge_request_is_refused(client):
 
     assert response.status_code == 413
     assert response.json()["detail"]["code"] == "TOO_LARGE"
+
+
+def test_api_docs_are_closed_in_production(monkeypatch):
+    """배포에서는 API 문서 화면을 열지 않음 (구조를 통째로 보여 줄 이유가 없음)"""
+    monkeypatch.setattr(settings, "cookie_secure", True)
+
+    assert docs_url() is None
+
+
+def test_api_docs_open_in_development(monkeypatch):
+    monkeypatch.setattr(settings, "cookie_secure", False)
+
+    assert docs_url() == "/api/docs"

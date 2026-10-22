@@ -13,10 +13,11 @@ from app.routers import auth, forum, me, sentences, stats, stories
 logger = logging.getLogger(__name__)
 
 # API 문서 화면도 /api 아래에 둠 (D-35 경로 규칙, 개발 프록시로도 열림)
+# 배포에서는 닫음 → 주소는 safety.docs_url()이 정함
 app = FastAPI(
     title="Once upon a time API",
-    docs_url="/api/docs",
-    openapi_url="/api/openapi.json",
+    docs_url=safety.docs_url(),
+    openapi_url=None if safety.docs_url() is None else "/api/openapi.json",
     redoc_url=None,
 )
 
