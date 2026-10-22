@@ -36,14 +36,14 @@ CSP = (
 
 
 def docs_url() -> str | None:
-    """API 문서 화면 주소. 배포(https)에서는 열지 않음 — 공격할 곳을 알려 줄 이유가 없음"""
-    return None if settings.cookie_secure else "/api/docs"
+    """API 문서 화면 주소. 배포에서는 열지 않음 — 공격할 곳을 알려 줄 이유가 없음"""
+    return None if settings.is_production else "/api/docs"
 
 
 def check_settings() -> None:
     """운영 설정이 갖춰졌는지 확인. 모자라면 뜨지 않고 무엇이 빠졌는지 알려 줌"""
     secret = settings.jwt_secret.get_secret_value()
-    production = settings.cookie_secure  # https로 서비스한다 = 운영
+    production = settings.is_production  # 배포 설정에 APP_ENV=production 이 있을 때만
 
     missing = []
     if len(secret) < MIN_SECRET:
@@ -54,6 +54,8 @@ def check_settings() -> None:
         missing.append("DATABASE_URL (또는 DB_PASSWORD)")
     if production and not settings.backend_origin.startswith("https://"):
         missing.append("BACKEND_ORIGIN (배포 주소를 https로)")
+    if production and not settings.cookie_secure:
+        missing.append("COOKIE_SECURE=true (로그인 쿠키를 https에서만 보내도록)")
 
     if not missing:
         return
@@ -84,7 +86,7 @@ class SafetyHeaders(BaseHTTPMiddleware):
         # API 문서 화면은 스크립트를 CDN에서 받아 오므로 그 화면만 빼고 적용
         if not request.url.path.startswith("/api/docs"):
             headers.setdefault("Content-Security-Policy", CSP)
-        if settings.cookie_secure:
+        if settings.is_production:
             headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
         return response
 

@@ -60,3 +60,39 @@ def test_password_is_not_printed(clean_env):
 
     assert "비밀번호" not in printed
     assert "pw@" not in printed
+
+
+@pytest.mark.parametrize(
+    "pasted",
+    [
+        f"'{NEON}'",  # 따옴표로 감싸 붙여넣음
+        f'"{NEON}"',
+        f"psql '{NEON}'",  # Neon 콘솔의 psql 명령을 통째로
+        f"  {NEON}  ",  # 앞뒤 공백
+        NEON.replace("@", "@" + chr(10)),  # 줄이 접혀 줄바꿈이 낌
+    ],
+    ids=["작은따옴표", "큰따옴표", "psql명령", "공백", "줄바꿈"],
+)
+def test_pasting_mistakes_are_cleaned_up(clean_env, pasted):
+    """배포 설정칸에 붙여넣다 흔히 섞이는 것들 — 알아서 털어 내고 붙음"""
+    url = settings_with(DATABASE_URL=pasted).database_url
+
+    assert url.host == "ep-cool-1.ap-southeast-1.aws.neon.tech"
+    assert url.query["sslmode"] == "require"
+
+
+def test_empty_value_is_treated_as_unset(clean_env):
+    """설정칸만 만들고 값을 안 넣은 경우 → 조각 설정으로 돌아감"""
+    url = settings_with(DATABASE_URL="  ", DB_HOST="localhost", DB_PASSWORD="x").database_url
+
+    assert url.host == "localhost"
+
+
+def test_unreadable_value_says_what_to_fix(clean_env):
+    """고칠 방법을 알려 주되, 비밀번호가 들어 있는 값 자체는 절대 출력하지 않음"""
+    broken = settings_with(DATABASE_URL="여기에_주소를_넣으세요:비밀번호123")
+
+    with pytest.raises(RuntimeError, match="DATABASE_URL") as problem:
+        _ = broken.database_url
+
+    assert "비밀번호123" not in str(problem.value)

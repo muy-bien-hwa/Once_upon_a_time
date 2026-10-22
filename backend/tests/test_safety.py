@@ -10,7 +10,8 @@ STRONG = "a" * 32
 
 @pytest.fixture
 def production(monkeypatch):
-    """배포된 것처럼 (https로 서비스하는 상태) 설정만 바꿔 둠"""
+    """배포된 것처럼 설정만 바꿔 둠"""
+    monkeypatch.setattr(settings, "app_env", "production")
     monkeypatch.setattr(settings, "cookie_secure", True)
     monkeypatch.setattr(settings, "backend_origin", "https://relaystory.kr")
     monkeypatch.setattr(settings, "google_client_id", "id")
@@ -53,8 +54,9 @@ def test_production_starts_when_everything_is_set(production, monkeypatch):
 
 
 def test_development_only_warns(monkeypatch, caplog):
-    """개발 PC에서는 막지 않고 알려 주기만 함"""
-    monkeypatch.setattr(settings, "cookie_secure", False)
+    """개발 PC에서는 막지 않고 알려 주기만 함 (쿠키 설정을 켜 두었더라도)"""
+    monkeypatch.setattr(settings, "app_env", "development")
+    monkeypatch.setattr(settings, "cookie_secure", True)
     set_secret(monkeypatch, "")
 
     check_settings()
@@ -86,12 +88,23 @@ def test_a_huge_request_is_refused(client):
 
 def test_api_docs_are_closed_in_production(monkeypatch):
     """배포에서는 API 문서 화면을 열지 않음 (구조를 통째로 보여 줄 이유가 없음)"""
-    monkeypatch.setattr(settings, "cookie_secure", True)
+    monkeypatch.setattr(settings, "app_env", "production")
 
     assert docs_url() is None
 
 
 def test_api_docs_open_in_development(monkeypatch):
-    monkeypatch.setattr(settings, "cookie_secure", False)
+    monkeypatch.setattr(settings, "app_env", "development")
+
+    assert docs_url() == "/api/docs"
+
+
+def test_https_cookie_setting_alone_is_not_production(monkeypatch):
+    """개발 PC에서 COOKIE_SECURE를 켜 봤다고 서버가 막히면 안 됨 (6-4에서 겪은 일)"""
+    monkeypatch.setattr(settings, "app_env", "development")
+    monkeypatch.setattr(settings, "cookie_secure", True)
+    set_secret(monkeypatch, "")
+
+    check_settings()
 
     assert docs_url() == "/api/docs"

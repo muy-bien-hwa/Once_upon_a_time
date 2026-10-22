@@ -27,7 +27,9 @@ services:
         sync: false
       - key: GOOGLE_CLIENT_SECRET
         sync: false
-      - key: COOKIE_SECURE # 쿠키를 https에서만 (이 값이 "운영"이라는 뜻도 됨)
+      - key: APP_ENV # 여기가 배포 서버라는 표시 → 자기 점검이 깐깐해지고 API 문서는 닫힘
+        value: production
+      - key: COOKIE_SECURE # 쿠키를 https에서만
         value: "true"
       - key: FRONTEND_ORIGIN
         value: https://relaystory.kr
