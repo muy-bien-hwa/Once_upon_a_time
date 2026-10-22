@@ -1,17 +1,20 @@
-from pydantic import SecretStr
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from sqlalchemy.engine import URL
+from sqlalchemy.engine import URL, make_url
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     # 설정 항목 : 타입(타입 검사 위해) = 기본값
+    # 개발 PC: 조각으로 적음 / 운영(Neon·Render): 한 줄짜리 DATABASE_URL을 그대로 붙여넣음
     db_host: str = "localhost"
     db_port: int = 5432
     db_user: str = "postgres"
-    db_password: SecretStr
+    db_password: SecretStr = SecretStr("")
     db_name: str = "relay"
+    # 한 줄 접속 문자열이 있으면 위 조각들보다 **먼저** 씀 → DB를 옮길 때 이 한 줄만 바꾸면 됨
+    db_url: SecretStr | None = Field(default=None, validation_alias="DATABASE_URL")
 
     # 구글 로그인 (3단계, F-06) — 값은 .env에만 (구글 콘솔에서 발급)
     google_client_id: str = ""
@@ -41,6 +44,10 @@ class Settings(BaseSettings):
 
     @property
     def database_url(self) -> URL:
+        if self.db_url is not None:
+            # psycopg(3)로 붙도록 드라이버만 바꿔 끼움 (sslmode 같은 뒷부분은 그대로 둠)
+            return make_url(self.db_url.get_secret_value()).set(drivername="postgresql+psycopg")
+
         # URL.create가 비밀번호의 특수문자(@, :, / 등)를 알아서 처리함
         return URL.create(
             "postgresql+psycopg",

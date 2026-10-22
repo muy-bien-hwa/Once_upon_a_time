@@ -5,7 +5,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.middleware.sessions import SessionMiddleware
 
-from app import web
+from app import safety, web
 from app.config import settings
 from app.db import engine
 from app.routers import auth, forum, me, sentences, stats, stories
@@ -19,6 +19,9 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
     redoc_url=None,
 )
+
+# 설정이 모자란 채로 배포되지 않게 먼저 확인 + 응답 안전 규칙(헤더) 붙이기
+safety.guard(app)
 
 # 구글 로그인 중간 단계(state)를 잠깐 보관하는 쿠키 (Authlib이 사용)
 app.add_middleware(
