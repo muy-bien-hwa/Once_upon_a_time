@@ -21,12 +21,12 @@ MIN_SECRET = 32
 # 없으면 누가 거대한 요청 하나로 서버 메모리를 가득 채울 수 있음
 MAX_BODY = 1_000_000
 
-# 브라우저에게 주는 규칙 — 화면이 쓰는 곳만 허용 (글꼴 CDN·구글 폰트)
+# 브라우저에게 주는 규칙 — 글꼴까지 우리 서버에서 내보내므로 바깥 주소는 하나도 없음
 CSP = (
     "default-src 'self'; "
     "script-src 'self'; "
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; "
-    "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; "
+    "style-src 'self' 'unsafe-inline'; "
+    "font-src 'self'; "
     "img-src 'self' data:; "
     "connect-src 'self'; "
     "frame-ancestors 'none'; "

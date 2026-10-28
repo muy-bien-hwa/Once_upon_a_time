@@ -73,6 +73,13 @@ def test_responses_carry_the_safety_headers(client):
     assert "camera=()" in headers["Permissions-Policy"]
 
 
+def test_the_rules_point_nowhere_outside(client):
+    """글꼴을 우리 서버에 담았으므로 바깥 주소가 남아 있으면 안 됨 (방문자 주소가 새지 않게)"""
+    rules = client.get("/api/health").headers["Content-Security-Policy"]
+
+    assert "https://" not in rules
+
+
 def test_api_docs_page_is_left_alone(client):
     """문서 화면은 스크립트를 CDN에서 받아 오므로 규칙에서 빼 둠"""
     assert "Content-Security-Policy" not in client.get("/api/docs").headers
