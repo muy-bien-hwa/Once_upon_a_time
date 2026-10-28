@@ -23,6 +23,11 @@ export function formatTimeAgo(iso: string, now: Date = new Date()): string {
   return formatDate(iso)
 }
 
+// 가입한 날이 1일째 (마이페이지 "238일째")
+export function daysSince(iso: string, now: Date = new Date()): number {
+  return Math.floor((now.getTime() - new Date(iso).getTime()) / DAY) + 1
+}
+
 export function formatDate(iso: string): string {
   const parts = dateFormat.formatToParts(new Date(iso))
   const get = (type: string) => parts.find((part) => part.type === type)?.value

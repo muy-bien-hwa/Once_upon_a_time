@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router'
 import ForumPage from './pages/ForumPage.tsx'
 import ForumPostPage from './pages/ForumPostPage.tsx'
+import MyPage from './pages/MyPage.tsx'
 import NewPostPage from './pages/NewPostPage.tsx'
 import NewStoryPage from './pages/NewStoryPage.tsx'
 import NicknamePage from './pages/NicknamePage.tsx'
@@ -19,6 +20,7 @@ export default function App() {
       <Route path="/stories/:storyId/forum/new" element={<NewPostPage />} />
       <Route path="/forum/posts/:postId" element={<ForumPostPage />} />
       <Route path="/nickname" element={<NicknamePage />} />
+      <Route path="/me" element={<MyPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
