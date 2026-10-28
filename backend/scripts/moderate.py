@@ -2,13 +2,14 @@
 
 import argparse
 import unicodedata
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.db import SessionLocal
 from app.models import ForumComment, ForumPost, Report, Sentence, Story, User
+from app.services import reports as report_service
 from app.timeutil import KST
 
 # 종류마다 (표, 신고 칸) — 문장·글·댓글을 같은 방식으로 다루기 위한 짝
@@ -72,7 +73,7 @@ def when(moment: datetime) -> str:
 
 
 def report_counts(db: Session, kind: str):
-    """그 종류에서 신고가 1건이라도 있는 대상 (신고 많은 순 → 최근 순)"""
+    """그 종류에서 아직 처리하지 않은 신고가 있는 대상 (신고 많은 순 → 최근 순)"""
     model, column = TARGETS[kind]
     count = func.count(Report.id)
     latest = func.max(Report.created_at)
@@ -80,6 +81,7 @@ def report_counts(db: Session, kind: str):
         select(model, User.nickname, count, latest)
         .join(User, User.id == model.author_id)
         .join(Report, column == model.id)
+        .where(Report.resolved_at.is_(None))
         .group_by(model.id, User.nickname)
         .order_by(count.desc(), latest.desc())
     ).all()
@@ -92,7 +94,7 @@ def show_list(db: Session, kinds: list[str], limit: int) -> None:
     piled.sort(key=lambda item: (item[3], item[4]), reverse=True)
 
     if not piled:
-        print("신고가 쌓인 글이 없어요.")
+        print("처리할 신고가 없어요.")
         return
 
     print(
@@ -122,9 +124,15 @@ def describe(db: Session, kind: str, row) -> None:
     author = db.get(User, row.author_id)
     _, column = TARGETS[kind]
     number = db.scalar(select(func.count()).select_from(Report).where(column == row.id))
+    waiting = db.scalar(
+        select(func.count())
+        .select_from(Report)
+        .where(column == row.id, Report.resolved_at.is_(None))
+    )
 
     print(
-        f"[{kind} {row.id}번] 상태: {STATUS_LABELS.get(row.status, row.status)} · 신고 {number}건"
+        f"[{kind} {row.id}번] 상태: {STATUS_LABELS.get(row.status, row.status)} · "
+        f"신고 {number}건 (처리 안 한 것 {waiting}건)"
     )
     print(f"쓴 사람: {author.nickname} (유저 {author.id}번) · 쓴 때: {when(row.created_at)}")
     print(f"어디: {where_of(db, kind, row)}")
@@ -162,7 +170,8 @@ def show_one(db: Session, kind: str, target_id: int) -> None:
     print(f"신고 {len(reports)}건:")
     for report, nickname in reports:
         reason = REASON_LABELS.get(report.reason, report.reason)
-        print(f"  · {when(report.created_at)} {nickname} — {reason}")
+        mark = f" [처리됨 {when(report.resolved_at)}]" if report.resolved_at else ""
+        print(f"  · {when(report.created_at)} {nickname} — {reason}{mark}")
         if report.detail:
             print(f"    “{report.detail}”")
 
@@ -173,35 +182,51 @@ def confirm(question: str) -> bool:
 
 
 def change(db: Session, kind: str, target_id: int, action: str) -> None:
-    """fold·unfold·hide 공통: 보여주고 → 묻고 → 바꿈"""
+    """fold·unfold·hide·done 공통: 보여주고 → 묻고 → 바꿈"""
     row = find(db, kind, target_id)
     describe(db, kind, row)
 
     status, question, done = PLANS[action]
     if kind == "문장" and action == "hide" and row.parent_id is None:
         print("※ 이 문장은 스토리의 첫 문장이라, 숨기면 스토리가 목록에서 통째로 사라져요.")
-    if row.status == status and action != "unfold":
+    if status is not None and row.status == status and action != "unfold":
         print(f"이미 {STATUS_LABELS[status]} 상태예요.")
         return
     if not confirm(question):
         print("그만뒀어요.")
         return
 
-    row.status = status
-    if action == "unfold":
-        # 신고를 비워야 다시 쌓일 때까지 또 접히지 않음 (D-93)
-        _, column = TARGETS[kind]
-        cleared = db.execute(delete(Report).where(column == row.id)).rowcount
-        print(f"신고 {cleared}건을 지웠어요.")
-    db.commit()
-    print(done)
+    if status is not None:
+        row.status = status
+    # 신고를 "처리됨"으로 표시 → 옛 신고 때문에 다시 접히지 않고, 기록은 3개월 남음
+    _, column = TARGETS[kind]
+    handled = report_service.mark_handled(db, column, row.id)
+    print(f"{done} (신고 {handled}건을 처리됨으로 표시)")
 
 
 PLANS = {
-    "unfold": ("active", "되돌릴까요? (다시 보이고 신고 기록이 지워집니다)", "다시 보이게 했어요."),
+    "unfold": ("active", "되돌릴까요? (다시 보이게 됩니다)", "다시 보이게 했어요."),
     "fold": ("folded", "가릴까요? (내용이 '신고 처리된 …'으로 바뀝니다)", "가렸어요."),
     "hide": ("removed", "완전히 숨길까요? (목록에서 사라집니다)", "숨겼어요."),
+    "done": (None, "신고만 처리됨으로 둘까요? (상태는 그대로)", "그대로 두었어요."),
 }
+
+
+def purge(db: Session, days: int) -> None:
+    """처리한 지 오래된 신고 지우기 (운영정책 7조 — 사본은 남기지 않음)"""
+    keep = timedelta(days=days)
+    old = db.scalar(
+        select(func.count())
+        .select_from(Report)
+        .where(Report.resolved_at < datetime.now(UTC) - keep)
+    )
+    if not old:
+        print(f"{days}일이 지난 신고 기록이 없어요.")
+        return
+    if not confirm(f"처리한 지 {days}일이 지난 신고 {old}건을 지울까요? (되돌릴 수 없음)"):
+        print("그만뒀어요.")
+        return
+    print(f"신고 {report_service.purge_handled(db, keep)}건을 지웠어요.")
 
 
 def main() -> None:
@@ -214,13 +239,17 @@ def main() -> None:
 
     for name, help_text in (
         ("show", "내용과 신고 내역 보기"),
-        ("unfold", "되돌리기 (다시 보이게 + 신고 비우기)"),
+        ("unfold", "되돌리기 (다시 보이게)"),
         ("fold", "바로 가리기"),
         ("hide", "완전히 숨기기"),
+        ("done", "그대로 두고 신고만 처리됨으로"),
     ):
         sub = commands.add_parser(name, help=help_text)
         sub.add_argument("kind", help="문장·글·댓글")
         sub.add_argument("id", type=int, help="번호")
+
+    purging = commands.add_parser("purge", help="처리한 지 오래된 신고 지우기")
+    purging.add_argument("--days", type=int, default=90, help="며칠 지난 것부터 (기본 90)")
 
     args = parser.parse_args()
 
@@ -230,6 +259,8 @@ def main() -> None:
             show_list(db, kinds, args.limit)
         elif args.command == "show":
             show_one(db, kind_of(args.kind), args.id)
+        elif args.command == "purge":
+            purge(db, args.days)
         else:
             change(db, kind_of(args.kind), args.id, args.command)
 

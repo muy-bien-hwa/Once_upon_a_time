@@ -1,4 +1,13 @@
-from sqlalchemy import BigInteger, CheckConstraint, ForeignKey, String, UniqueConstraint
+from datetime import datetime
+
+from sqlalchemy import (
+    BigInteger,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, CreatedAtMixin, IdMixin
@@ -35,3 +44,5 @@ class Report(IdMixin, CreatedAtMixin, Base):
     # 신고 사유 1개 + 설명 500자 (기타는 설명 필수) / 신고 내용은 PM만 봄 (D-93)
     reason: Mapped[str] = mapped_column(String(20))
     detail: Mapped[str] = mapped_column(String(500), server_default="")
+    # PM이 확인·조치를 끝낸 때. 지우지 않고 표시만 남김 (운영정책 7조)
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

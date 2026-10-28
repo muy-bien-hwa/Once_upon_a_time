@@ -4,9 +4,12 @@
 - 신고가 기준(기본 5건) 이상 쌓이면 **같은 처리 안에서** 바로 접힘(folded)
 - 문장·커뮤니티 글·댓글이 같은 표(reports)를 씀 → 규칙도 한곳에서
 - 접힘을 되돌리는 일은 PM이 직접 (운영 도구, D-19)
+- 처리한 신고는 지우지 않고 "처리됨"으로 표시 → 3개월 뒤 정리 (운영정책 7조, D-95)
 """
 
-from sqlalchemy import and_, func, select
+from datetime import UTC, datetime, timedelta
+
+from sqlalchemy import and_, delete, func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import InstrumentedAttribute, Session, aliased
 
@@ -19,6 +22,9 @@ from app.services.forum_comments import comment_gone, readable_post
 from app.services.stories import find_visible_story
 
 _root = aliased(Sentence)
+
+# 처리한 신고를 남겨 두는 기간 (운영정책 7조)
+HANDLED_KEEP = timedelta(days=90)
 
 
 def report_sentence(db: Session, user: User, sentence_id: int, data: ReportCreate) -> None:
@@ -104,8 +110,34 @@ def _save(
     if saved is None:
         raise api_error(409, "ALREADY_REPORTED", f"이미 신고한 {label}이에요")
 
-    count = db.scalar(select(func.count()).select_from(Report).where(column == target.id))
+    # 이미 처리한 신고는 빼고 셈 → 되돌린 글이 옛 신고 때문에 바로 다시 접히지 않음
+    count = db.scalar(
+        select(func.count())
+        .select_from(Report)
+        .where(column == target.id, Report.resolved_at.is_(None))
+    )
     if count >= settings.reports_to_fold:
         # 내용을 가림 → 목록·화면에서 "신고 처리된 ..."만 보이고 그 뒤에 이어 쓸 수 없음 (D-69·D-70)
         target.status = "folded"
     db.commit()
+
+
+def mark_handled(db: Session, column: InstrumentedAttribute, target_id: int) -> int:
+    """그 대상에 쌓인 신고를 "처리됨"으로 표시 (지우지는 않음)
+
+    같은 처리 안에서 바꿔 둔 상태(active/folded/removed)도 함께 저장됨
+    """
+    handled = db.execute(
+        update(Report)
+        .where(column == target_id, Report.resolved_at.is_(None))
+        .values(resolved_at=func.now())
+    ).rowcount
+    db.commit()
+    return handled
+
+
+def purge_handled(db: Session, keep: timedelta = HANDLED_KEEP) -> int:
+    """처리한 지 오래된 신고를 지움 (사본은 남기지 않음, 운영정책 7조)"""
+    gone = db.execute(delete(Report).where(Report.resolved_at < datetime.now(UTC) - keep)).rowcount
+    db.commit()
+    return gone
