@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from app.errors import api_error
 from app.models import Sentence, Story, StoryManager, User
 from app.schemas.story import StoryAuthor, StoryAuthorsOut
+from app.services import users
 from app.services.stories import find_visible_story
 
 
@@ -24,7 +25,7 @@ def list_authors(db: Session, story_id: int, user_id: int | None = None) -> Stor
     manager_ids = _manager_ids(db, story_id)
 
     rows = db.execute(
-        select(User.id, User.nickname, func.count(Sentence.id))
+        select(User.id, func.coalesce(User.nickname, users.WITHDRAWN), func.count(Sentence.id))
         .join(Sentence, Sentence.author_id == User.id)
         .where(Sentence.story_id == story_id, Sentence.status != "removed")
         .group_by(User.id, User.nickname)

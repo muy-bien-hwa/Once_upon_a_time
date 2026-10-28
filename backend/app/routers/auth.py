@@ -45,11 +45,13 @@ async def google_callback(request: Request, db: DbSession):
         # 사용자가 취소했거나 값이 어긋난 경우
         raise api_error(401, "AUTH_FAILED", "구글 로그인에 실패했어요") from None
 
-    google_user_id = (token.get("userinfo") or {}).get("sub")
+    profile = token.get("userinfo") or {}
+    google_user_id = profile.get("sub")
     if not google_user_id:
         raise api_error(401, "AUTH_FAILED", "구글 로그인에 실패했어요")
 
-    user = user_service.get_or_create_google_user(db, google_user_id)
+    # 이름·사진도 함께 오지만 저장하지 않음 (처리방침 제1조 ③)
+    user = user_service.get_or_create_google_user(db, google_user_id, email=profile.get("email"))
     response = RedirectResponse(settings.frontend_origin or "/")
     _set_login_cookie(response, user.id)
     return response

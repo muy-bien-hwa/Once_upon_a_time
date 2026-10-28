@@ -5,13 +5,13 @@
 - 삭제하면 조용히 사라짐 (맨 위 댓글을 지우면 그 아래 답글도 함께, 글 삭제와 같은 방식)
 """
 
-from sqlalchemy import Row, select, update
+from sqlalchemy import Row, func, select, update
 from sqlalchemy.orm import Session, aliased
 
 from app.errors import api_error
 from app.models import ForumComment, ForumPost, Report, User
 from app.schemas.forum import CommentCreate, CommentOut
-from app.services import limits
+from app.services import limits, users
 from app.services.forum import post_gone
 from app.services.stories import find_visible_story
 
@@ -106,7 +106,13 @@ def readable_post(db: Session, post_id: int) -> ForumPost:
 
 def _select_comments(user_id: int | None):
     return (
-        select(ForumComment, _author.nickname, _mentioned.nickname, _my_report(user_id))
+        select(
+            ForumComment,
+            func.coalesce(_author.nickname, users.WITHDRAWN),
+            # 멘션 대상이 탈퇴했으면 @표시도 '탈퇴한 작가'로
+            _mentioned.nickname,
+            _my_report(user_id),
+        )
         .join(_author, _author.id == ForumComment.author_id)
         .outerjoin(_mentioned, _mentioned.id == ForumComment.reply_to_user_id)
         .where(ForumComment.status != "removed")

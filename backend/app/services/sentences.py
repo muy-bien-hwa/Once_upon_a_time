@@ -10,7 +10,7 @@ from app.config import settings
 from app.errors import api_error
 from app.models import Report, Sentence, SentenceVote, Story, User
 from app.schemas.sentence import PathOut, SentenceOut, SentenceSort, StoryRef
-from app.services import limits
+from app.services import limits, users
 from app.services.ranking import rank_score
 from app.timeutil import kst_now
 
@@ -45,7 +45,7 @@ def fetch_sentences(
     stmt = (
         select(
             Sentence,
-            User.nickname,
+            func.coalesce(User.nickname, users.WITHDRAWN),
             _up_count,
             _down_count,
             _child_count,

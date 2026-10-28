@@ -2,13 +2,15 @@
 
 from datetime import UTC, datetime, timedelta
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Response
 from sqlalchemy.exc import IntegrityError
 
 from app.deps import CurrentUser, DbSession
 from app.errors import api_error
 from app.models import User
 from app.schemas.user import MeOut, NicknameUpdate
+from app.security import COOKIE_NAME
+from app.services import users as user_service
 
 router = APIRouter(prefix="/api/me", tags=["me"])
 
@@ -61,3 +63,15 @@ def _editable_at(user: User) -> datetime | None:
 
 def _to_out(user: User) -> MeOut:
     return MeOut(id=user.id, nickname=user.nickname, nickname_editable_at=_editable_at(user))
+
+
+@router.delete("")
+def delete_me(response: Response, db: DbSession, user: CurrentUser) -> dict[str, str]:
+    """계정 삭제 (6-4)
+
+    쓴 문장은 남고 작성자 표시만 "탈퇴한 작가"가 됨 — 뒤에 이어진 이야기가 무너지지 않도록
+    """
+    user_service.withdraw(db, user)
+    # 로그인 표도 바로 거둠 (서버는 이미 탈퇴자로 보지만 브라우저에 남겨 둘 이유가 없음)
+    response.delete_cookie(COOKIE_NAME, path="/")
+    return {"status": "deleted"}

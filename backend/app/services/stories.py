@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session, aliased
 from app.errors import api_error
 from app.models import ForumPost, Sentence, Story, StoryRecommendation, User
 from app.schemas.story import StoryCreate, StoryCreateOut, StoryListOut, StoryOut, StorySort
-from app.services import limits
+from app.services import limits, users
 from app.services.sentences import get_sentence
 
 # 스토리의 첫 문장 (스토리당 1개, D-65) → 스토리와 1:1로 붙여서 조회
@@ -132,7 +132,7 @@ def _select_stories(user_id: int | None = None):
             _root.id,
             _root.content,
             _root.status,
-            User.nickname,
+            func.coalesce(User.nickname, users.WITHDRAWN),
             _recommend_count,
             _author_count,
             _max_depth,

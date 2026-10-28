@@ -25,7 +25,9 @@ def find_user(db: Session, request: Request) -> User | None:
     """로그인 쿠키로 유저를 찾음. 쿠키가 없거나 가짜면 None"""
     token = request.cookies.get(COOKIE_NAME)
     user_id = read_token(token) if token else None
-    return db.get(User, user_id) if user_id is not None else None
+    user = db.get(User, user_id) if user_id is not None else None
+    # 탈퇴한 사람은 쿠키가 남아 있어도 로그인 상태가 아님
+    return None if user is None or user.deleted_at is not None else user
 
 
 def get_optional_user(db: DbSession, request: Request) -> User | None:

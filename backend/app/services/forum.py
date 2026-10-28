@@ -21,7 +21,7 @@ from app.schemas.forum import (
     PostSummary,
     QuotedSentence,
 )
-from app.services import limits, managers
+from app.services import limits, managers, users
 from app.services.ranking import rank_score
 from app.services.stories import find_visible_story
 from app.timeutil import kst_now
@@ -143,7 +143,7 @@ def _select_posts(user_id: int | None, story_id: int | None = None):
     stmt = (
         select(
             ForumPost,
-            User.nickname,
+            func.coalesce(User.nickname, users.WITHDRAWN),
             _up_count,
             _down_count,
             _my_vote(user_id),
