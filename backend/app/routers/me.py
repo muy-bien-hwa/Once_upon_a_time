@@ -1,15 +1,18 @@
-"""내 정보·닉네임 (docs 07 인증, F-06)"""
+"""내 정보·닉네임·마이페이지 (docs 07 인증·#34·#35, F-06)"""
 
 from datetime import UTC, datetime, timedelta
+from typing import Annotated
 
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Query, Response
 from sqlalchemy.exc import IntegrityError
 
 from app.deps import CurrentUser, DbSession
 from app.errors import api_error
 from app.models import User
+from app.schemas.profile import MeSummaryOut, ProfileSentenceListOut, ProfileSort
 from app.schemas.user import MeOut, NicknameUpdate
 from app.security import COOKIE_NAME
+from app.services import profiles as profile_service
 from app.services import users as user_service
 
 router = APIRouter(prefix="/api/me", tags=["me"])
@@ -75,3 +78,22 @@ def delete_me(response: Response, db: DbSession, user: CurrentUser) -> dict[str,
     # 로그인 표도 바로 거둠 (서버는 이미 탈퇴자로 보지만 브라우저에 남겨 둘 이유가 없음)
     response.delete_cookie(COOKIE_NAME, path="/")
     return {"status": "deleted"}
+
+
+@router.get("/summary")
+def my_summary(db: DbSession, user: CurrentUser) -> MeSummaryOut:
+    """마이페이지 맨 위 칸 — 가입일과 숫자 셋 (#34)"""
+    return profile_service.summary(db, user)
+
+
+@router.get("/sentences")
+def my_sentences(
+    db: DbSession,
+    user: CurrentUser,
+    page: Annotated[int, Query(ge=1)] = 1,
+    size: Annotated[int, Query(ge=1, le=50)] = 20,
+    sort: ProfileSort = "latest",
+    q: Annotated[str | None, Query(max_length=100)] = None,
+) -> ProfileSentenceListOut:
+    """내가 쓴 문장 (#35). 지운 문장·접힌 문장도 나오지만 본문은 비어 있음"""
+    return profile_service.my_sentences(db, user, page, size, sort, q)

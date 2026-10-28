@@ -33,6 +33,8 @@ class SentenceOut(BaseModel):
     content: str | None
     status: Literal["active", "folded", "deleted"]
     author_nickname: str | None
+    # 작성자가 탈퇴했는지 → 이름을 작가 화면 링크로 만들지 말지 (D-95)
+    author_withdrawn: bool
     created_at: datetime
     up_count: int
     down_count: int

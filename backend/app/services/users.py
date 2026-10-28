@@ -14,6 +14,14 @@ GOOGLE = "google"
 WITHDRAWN = "탈퇴한 작가"
 
 
+def name_of(nickname: str | None) -> str:
+    """화면에 보일 작가 이름 — 닉네임이 비어 있으면 탈퇴한 사람
+
+    이름 글자로 탈퇴를 판단하면 안 됨: 누구나 닉네임을 "탈퇴한 작가"로 지을 수 있음 (D-95)
+    """
+    return WITHDRAWN if nickname is None else nickname
+
+
 def get_or_create_google_user(db: Session, google_user_id: str, email: str | None = None) -> User:
     """구글 계정으로 처음 온 사람이면 유저를 만듦 (닉네임은 아직 비어 있음, D-48)
 

@@ -5,7 +5,7 @@
 - 삭제하면 조용히 사라짐 (맨 위 댓글을 지우면 그 아래 답글도 함께, 글 삭제와 같은 방식)
 """
 
-from sqlalchemy import Row, func, select, update
+from sqlalchemy import Row, select, update
 from sqlalchemy.orm import Session, aliased
 
 from app.errors import api_error
@@ -108,8 +108,8 @@ def _select_comments(user_id: int | None):
     return (
         select(
             ForumComment,
-            func.coalesce(_author.nickname, users.WITHDRAWN),
-            # 멘션 대상이 탈퇴했으면 @표시도 '탈퇴한 작가'로
+            _author.nickname,
+            # 멘션 대상이 탈퇴했으면 @표시 자체가 사라짐 (닉네임이 비어 있으므로)
             _mentioned.nickname,
             _my_report(user_id),
         )
@@ -135,12 +135,14 @@ def _to_out(row: Row) -> CommentOut:
     comment, nickname, mentioned, reported = row
     # 신고로 접힌 댓글은 내용과 작성자를 보내지 않음 (D-69와 같은 방식)
     hidden = comment.status == "folded"
+    gone = nickname is None
     return CommentOut(
         id=comment.id,
         post_id=comment.post_id,
         parent_id=comment.parent_id,
         body=None if hidden else comment.body,
-        author_nickname=None if hidden else nickname,
+        author_nickname=None if hidden else users.name_of(nickname),
+        author_withdrawn=gone,
         status=comment.status,
         reply_to_nickname=mentioned,
         reported_by_me=reported,

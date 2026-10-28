@@ -45,7 +45,7 @@ def fetch_sentences(
     stmt = (
         select(
             Sentence,
-            func.coalesce(User.nickname, users.WITHDRAWN),
+            User.nickname,
             _up_count,
             _down_count,
             _child_count,
@@ -234,6 +234,8 @@ def _to_out(row: Row) -> SentenceOut:
     sentence, nickname, up, down, children, mine, reported = row
     # 삭제된 문장·신고로 접힌 문장은 본문과 작성자를 보내지 않음 → 화면엔 문구만 (D-63·D-69)
     hidden = sentence.status in ("deleted", "folded")
+    # 닉네임이 비어 있으면 탈퇴한 사람. 글자로 비교하지 않는 이유는 users.WITHDRAWN 참고
+    gone = nickname is None
     return SentenceOut(
         id=sentence.id,
         story_id=sentence.story_id,
@@ -241,7 +243,8 @@ def _to_out(row: Row) -> SentenceOut:
         depth=sentence.depth,
         content=None if hidden else sentence.content,
         status=sentence.status,
-        author_nickname=None if hidden else nickname,
+        author_nickname=None if hidden else users.name_of(nickname),
+        author_withdrawn=gone,
         created_at=sentence.created_at,
         up_count=up,
         down_count=down,

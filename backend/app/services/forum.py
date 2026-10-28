@@ -143,7 +143,7 @@ def _select_posts(user_id: int | None, story_id: int | None = None):
     stmt = (
         select(
             ForumPost,
-            func.coalesce(User.nickname, users.WITHDRAWN),
+            User.nickname,
             _up_count,
             _down_count,
             _my_vote(user_id),
@@ -209,11 +209,13 @@ def _to_summary(row: Row) -> PostSummary:
     post, nickname, up, down, mine, reported, comments, quote_id, quote_content = row
     # 신고로 접힌 글은 제목·본문·작성자·인용을 보내지 않음 → 화면엔 문구만 (D-69와 같은 방식)
     hidden = post.status == "folded"
+    gone = nickname is None
     return PostSummary(
         id=post.id,
         story_id=post.story_id,
         title=None if hidden else post.title,
-        author_nickname=None if hidden else nickname,
+        author_nickname=None if hidden else users.name_of(nickname),
+        author_withdrawn=gone,
         status=post.status,
         created_at=post.created_at,
         up_count=up,

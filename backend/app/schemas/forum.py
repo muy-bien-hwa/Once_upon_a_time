@@ -42,6 +42,8 @@ class PostSummary(BaseModel):
     # 신고로 접히면 제목·작성자·인용을 비움 (D-69와 같은 방식)
     title: str | None
     author_nickname: str | None
+    # 작성자가 탈퇴했는지 → 이름을 작가 화면 링크로 만들지 말지 (D-95)
+    author_withdrawn: bool
     status: Literal["active", "folded"]
     created_at: datetime
     up_count: int
@@ -88,6 +90,8 @@ class CommentOut(BaseModel):
     # 신고로 접히면 내용·작성자를 비움 (D-69와 같은 방식)
     body: str | None
     author_nickname: str | None
+    # 작성자가 탈퇴했는지 (D-95)
+    author_withdrawn: bool
     status: Literal["active", "folded"]
     # 누구에게 한 말인지 (@닉네임) — 지금 닉네임으로 보냄 (D-91)
     reply_to_nickname: str | None
