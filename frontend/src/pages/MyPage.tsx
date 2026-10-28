@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
-import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { fetchMySentences, fetchMySummary } from '../api/profile.ts'
 import DeleteAccount from '../components/DeleteAccount.tsx'
 import LoginButton from '../components/LoginButton.tsx'
 import LogoutButton from '../components/LogoutButton.tsx'
 import Notice from '../components/Notice.tsx'
+import ProfileFrame, { Panel } from '../components/ProfileLayout.tsx'
 import SentenceRow from '../components/SentenceRow.tsx'
 import { daysSince, formatDate } from '../lib/time.ts'
 import { useMe } from '../lib/useMe.ts'
@@ -29,26 +29,27 @@ export default function MyPage() {
 
   if (isPending) {
     return (
-      <Frame>
+      <ProfileFrame width="max-w-4xl">
         <div className="h-64 animate-pulse rounded-lg bg-stone-200/70" />
-      </Frame>
+      </ProfileFrame>
     )
   }
 
   if (!me) {
     return (
-      <Frame>
+      <ProfileFrame width="max-w-4xl">
         <Notice message="마이페이지는 로그인한 뒤에 볼 수 있어요.">
           <LoginButton small />
         </Notice>
-      </Frame>
+      </ProfileFrame>
     )
   }
 
   const total = summary.data?.sentence_count ?? 0
 
   return (
-    <Frame
+    <ProfileFrame
+      width="max-w-4xl"
       top={
         <>
           <Link
@@ -137,46 +138,7 @@ export default function MyPage() {
           <DeleteAccount nickname={me.nickname} />
         </Panel>
       </div>
-    </Frame>
-  )
-}
-
-// 맨 위 줄(홈·로그아웃)과 바깥 여백 — 휴대폰 시계·손잡이 자리를 피해 위아래를 넉넉히 둠
-function Frame({ children, top }: { children: ReactNode; top?: ReactNode }) {
-  return (
-    <main className="min-h-screen bg-paper px-4 pt-4 pb-20 sm:px-6">
-      <div className="mx-auto max-w-4xl">
-        <div className="flex min-h-11 items-center justify-between gap-3">{top}</div>
-        <div className="mt-3">{children}</div>
-      </div>
-    </main>
-  )
-}
-
-function Panel({
-  title,
-  children,
-  danger = false,
-  className = '',
-}: {
-  title?: string
-  children: ReactNode
-  danger?: boolean
-  className?: string
-}) {
-  return (
-    <section
-      className={`flex flex-col rounded-lg bg-white p-4 shadow-paper ring-1 ${
-        danger ? 'ring-down-600/25' : 'ring-stone-200/60'
-      } ${className}`}
-    >
-      {title && (
-        <h2 className={`mb-3 text-sm font-semibold ${danger ? 'text-down-600' : 'text-stone-700'}`}>
-          {title}
-        </h2>
-      )}
-      {children}
-    </section>
+    </ProfileFrame>
   )
 }
 
