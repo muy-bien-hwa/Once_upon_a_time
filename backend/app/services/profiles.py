@@ -1,6 +1,7 @@
 """마이페이지·작가 화면 (docs 07 #34~#37, D-95)
 
 - 내 화면: 지운 문장·접힌 문장도 목록에 넣되 **본문은 비워서** 보냄 (약관 26조)
+- 내 화면은 상태로 거를 수 있고, 검색도 가려진 문장까지 함께 찾음 (내가 쓴 내 문장이므로)
 - 작가 화면: 보이는 문장만 / 가입 날짜는 연월까지만
 - 숫자(문장 수·이야기 수·받은 추천)는 그 화면의 목록과 **같은 범위**로 셈 → 숫자와 목록이 어긋나지 않음
 """
@@ -13,6 +14,8 @@ from app.models import Sentence, SentenceVote, Story, User
 from app.schemas.profile import (
     AuthorOut,
     MeSummaryOut,
+    ProfileCounts,
+    ProfileFilter,
     ProfileSentenceListOut,
     ProfileSentenceOut,
     ProfileSort,
@@ -22,6 +25,14 @@ from app.timeutil import KST
 # 내 화면에 넣는 문장 / 작가 화면에 넣는 문장
 MINE = ("active", "folded", "deleted")
 PUBLIC = ("active",)
+
+# 내 화면의 거르개 버튼이 고르는 상태
+FILTERS: dict[str, tuple[str, ...]] = {
+    "all": MINE,
+    "active": ("active",),
+    "deleted": ("deleted",),
+    "folded": ("folded",),
+}
 
 _root = aliased(Sentence)
 _story_join = (Story, Sentence.story_id == Story.id)
@@ -77,10 +88,18 @@ def find_author(db: Session, nickname: str) -> User:
 
 
 def my_sentences(
-    db: Session, user: User, page: int, size: int, sort: ProfileSort, q: str | None
+    db: Session,
+    user: User,
+    page: int,
+    size: int,
+    sort: ProfileSort,
+    q: str | None,
+    status: ProfileFilter = "all",
 ) -> ProfileSentenceListOut:
-    """내가 쓴 문장 (#35)"""
-    return _page(db, user.id, MINE, page, size, sort, q)
+    """내가 쓴 문장 (#35). 상태로 거를 수 있고, 거르개 버튼에 적을 수도 함께 보냄"""
+    listing = _page(db, user.id, FILTERS[status], page, size, sort, q)
+    listing.counts = _counts(db, user.id, q)
+    return listing
 
 
 def author_sentences(
@@ -124,8 +143,8 @@ def _where(author_id: int, statuses: tuple[str, ...], q: str | None = None):
         .exists(),
     ]
     if q:
-        # 가려진 문장은 본문을 보내지 않으므로 찾을 수도 없어야 함
-        conditions += [Sentence.status == "active", Sentence.content.ilike(_like(q), escape="\\")]
+        # 가려진 문장도 함께 찾음 — 내가 쓴 내 문장이므로 (본문은 여전히 보내지 않음)
+        conditions.append(Sentence.content.ilike(_like(q), escape="\\"))
     return conditions
 
 
@@ -134,6 +153,24 @@ def _like(text: str) -> str:
     for letter in ("\\", "%", "_"):
         text = text.replace(letter, "\\" + letter)
     return f"%{text}%"
+
+
+def _counts(db: Session, author_id: int, q: str | None) -> ProfileCounts:
+    """거르개 버튼에 적을 수 (검색 중이면 그 검색 안에서)"""
+    rows = db.execute(
+        select(Sentence.status, func.count())
+        .select_from(Sentence)
+        .join(*_story_join)
+        .where(*_where(author_id, MINE, q))
+        .group_by(Sentence.status)
+    ).all()
+    found = dict(rows)
+    return ProfileCounts(
+        all=sum(found.values()),
+        active=found.get("active", 0),
+        deleted=found.get("deleted", 0),
+        folded=found.get("folded", 0),
+    )
 
 
 def _stats(db: Session, author_id: int, statuses: tuple[str, ...]) -> tuple[int, int, int, int]:

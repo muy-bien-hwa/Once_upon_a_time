@@ -125,12 +125,43 @@ def test_hidden_sentences_keep_their_place_but_not_their_text(client, mine):
     assert items[mine["folded"]]["status"] == "folded"
 
 
-def test_search_looks_only_inside_visible_sentences(client, mine):
+def test_search_also_finds_my_hidden_sentences(client, mine):
+    """내가 쓴 내 문장이므로 지운 것·접힌 것도 찾아 줌 (본문은 여전히 비어 있음)"""
     found = client.get("/api/me/sentences?q=문장이다").json()
 
-    # "지운 문장이다"·"접힌 문장이다"도 글자는 맞지만 본문을 보내지 않으므로 찾히지 않음
-    assert [item["id"] for item in found["items"]] == [mine["root"]]
-    assert found["total"] == 1
+    assert {item["id"] for item in found["items"]} == {
+        mine["root"],
+        mine["deleted"],
+        mine["folded"],
+    }
+    assert next(i for i in found["items"] if i["id"] == mine["folded"])["content"] is None
+
+
+def test_filtering_by_status(client, mine):
+    only_deleted = client.get("/api/me/sentences?status=deleted").json()
+
+    assert [item["id"] for item in only_deleted["items"]] == [mine["deleted"]]
+    assert only_deleted["total"] == 1
+
+
+def test_filtering_inside_a_search(client, mine):
+    """예: '문장이다'로 찾은 것 중에서 지운 것만"""
+    found = client.get("/api/me/sentences?q=문장이다&status=deleted").json()
+
+    assert [item["id"] for item in found["items"]] == [mine["deleted"]]
+
+
+def test_counts_follow_the_search(client, mine):
+    whole = client.get("/api/me/sentences").json()["counts"]
+    assert whole == {"all": 4, "active": 2, "deleted": 1, "folded": 1}
+
+    searched = client.get("/api/me/sentences?q=지운").json()["counts"]
+    assert searched == {"all": 1, "active": 0, "deleted": 1, "folded": 0}
+
+
+def test_an_author_list_has_no_counts(client, mine):
+    """작가 화면은 보이는 문장뿐이라 거를 것이 없음"""
+    assert client.get("/api/users/author/sentences").json()["counts"] is None
 
 
 def test_search_takes_percent_as_a_letter(client, mine):

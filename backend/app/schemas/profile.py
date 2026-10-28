@@ -8,6 +8,9 @@ from pydantic import BaseModel
 # 내 문장·작가의 문장 목록 정렬: 최신순(기본) / 추천순
 ProfileSort = Literal["latest", "votes"]
 
+# 내 문장 거르개: 전체(기본) / 보임 / 삭제함 / 신고 처리됨
+ProfileFilter = Literal["all", "active", "deleted", "folded"]
+
 
 class MeSummaryOut(BaseModel):
     """마이페이지 맨 위 칸 (나만 봄)"""
@@ -43,8 +46,20 @@ class ProfileSentenceOut(BaseModel):
     up_count: int
 
 
+class ProfileCounts(BaseModel):
+    """거르개 버튼에 적는 수 — 검색 중이면 그 검색 안에서의 수"""
+
+    all: int
+    active: int
+    deleted: int
+    folded: int
+
+
 class ProfileSentenceListOut(BaseModel):
     items: list[ProfileSentenceOut]
     page: int
     size: int
+    # 지금 고른 거르개(와 검색)에 해당하는 문장 수
     total: int
+    # 내 화면에서만 채움 (작가 화면은 보이는 문장뿐이라 거를 것이 없음)
+    counts: ProfileCounts | None = None

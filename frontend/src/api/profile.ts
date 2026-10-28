@@ -21,17 +21,31 @@ export type ProfileSentence = {
   up_count: number
 }
 
+export type ProfileCounts = { all: number; active: number; deleted: number; folded: number }
+
 export type ProfileSentenceList = {
   items: ProfileSentence[]
   page: number
   size: number
+  // 지금 고른 거르개(와 검색)에 해당하는 문장 수
   total: number
+  // 거르개 버튼에 적는 수 — 내 화면에서만 옴 (작가 화면은 null)
+  counts: ProfileCounts | null
 }
 
 // 최신순(기본) · 추천순
 export type ProfileSort = 'latest' | 'votes'
 
-export type ListOptions = { page?: number; size?: number; sort?: ProfileSort; q?: string }
+// 내 문장 거르개: 전체(기본) · 보임 · 삭제함 · 신고 처리됨
+export type ProfileFilter = 'all' | 'active' | 'deleted' | 'folded'
+
+export type ListOptions = {
+  page?: number
+  size?: number
+  sort?: ProfileSort
+  q?: string
+  status?: ProfileFilter
+}
 
 export function fetchMySummary(signal?: AbortSignal) {
   return apiGet<MeSummary>('/api/me/summary', signal)
@@ -46,12 +60,16 @@ export function withdraw() {
 }
 
 // 기본값과 같은 것은 주소에 붙이지 않음 (주소가 짧아지고, 같은 목록이면 같은 주소가 됨)
-function withOptions(path: string, { page = 1, size, sort = 'latest', q }: ListOptions) {
+function withOptions(
+  path: string,
+  { page = 1, size, sort = 'latest', q, status = 'all' }: ListOptions,
+) {
   const params = new URLSearchParams()
   if (page > 1) params.set('page', String(page))
   if (size) params.set('size', String(size))
   if (sort !== 'latest') params.set('sort', sort)
   if (q) params.set('q', q)
+  if (status !== 'all') params.set('status', status)
   const query = params.toString()
   return query ? `${path}?${query}` : path
 }

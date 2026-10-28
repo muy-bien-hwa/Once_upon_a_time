@@ -9,7 +9,12 @@ from sqlalchemy.exc import IntegrityError
 from app.deps import CurrentUser, DbSession
 from app.errors import api_error
 from app.models import User
-from app.schemas.profile import MeSummaryOut, ProfileSentenceListOut, ProfileSort
+from app.schemas.profile import (
+    MeSummaryOut,
+    ProfileFilter,
+    ProfileSentenceListOut,
+    ProfileSort,
+)
 from app.schemas.user import MeOut, NicknameUpdate
 from app.security import COOKIE_NAME
 from app.services import profiles as profile_service
@@ -94,6 +99,7 @@ def my_sentences(
     size: Annotated[int, Query(ge=1, le=50)] = 20,
     sort: ProfileSort = "latest",
     q: Annotated[str | None, Query(max_length=100)] = None,
+    status: ProfileFilter = "all",
 ) -> ProfileSentenceListOut:
     """내가 쓴 문장 (#35). 지운 문장·접힌 문장도 나오지만 본문은 비어 있음"""
-    return profile_service.my_sentences(db, user, page, size, sort, q)
+    return profile_service.my_sentences(db, user, page, size, sort, q, status)

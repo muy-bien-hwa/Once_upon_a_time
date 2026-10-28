@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
-import { fetchMySentences, type ProfileSort } from '../api/profile.ts'
+import { fetchMySentences, type ProfileFilter, type ProfileSort } from '../api/profile.ts'
 import LoginButton from '../components/LoginButton.tsx'
 import LogoutButton from '../components/LogoutButton.tsx'
 import Notice from '../components/Notice.tsx'
@@ -14,30 +14,42 @@ const SORTS: { value: ProfileSort; label: string }[] = [
   { value: 'votes', label: '추천순' },
 ]
 
+// 상태 거르개 — 검색한 뒤 그 안에서 "삭제함"만 보는 식으로도 씀
+const FILTERS: { value: ProfileFilter; label: string }[] = [
+  { value: 'all', label: '전체' },
+  { value: 'active', label: '보임' },
+  { value: 'deleted', label: '삭제함' },
+  { value: 'folded', label: '신고 처리됨' },
+]
+
 // 내가 쓴 문장 전부 (D-95) — 검색·정렬·더 보기
 export default function MySentencesPage() {
   const { data: me, isPending } = useMe()
   const [params, setParams] = useSearchParams()
   const q = params.get('q') ?? ''
   const sort: ProfileSort = params.get('sort') === 'votes' ? 'votes' : 'latest'
+  const status = (FILTERS.find((item) => item.value === params.get('status'))?.value ??
+    'all') as ProfileFilter
 
   const list = useInfiniteQuery({
-    queryKey: ['me', 'sentences', { sort, q }],
-    queryFn: ({ pageParam, signal }) => fetchMySentences({ page: pageParam, sort, q }, signal),
+    queryKey: ['me', 'sentences', { sort, q, status }],
+    queryFn: ({ pageParam, signal }) =>
+      fetchMySentences({ page: pageParam, sort, q, status }, signal),
     initialPageParam: 1,
     // 받은 만큼이 전체보다 적으면 다음 쪽이 있음
     getNextPageParam: (last) => (last.page * last.size < last.total ? last.page + 1 : undefined),
     enabled: Boolean(me),
   })
 
-  const change = (next: { q?: string; sort?: ProfileSort }) => {
+  const change = (next: { q?: string; sort?: ProfileSort; status?: ProfileFilter }) => {
     const updated = new URLSearchParams(params)
     for (const [key, value] of Object.entries(next)) {
       if (value) updated.set(key, value)
       else updated.delete(key)
     }
-    // 기본 정렬은 주소에 남기지 않음
+    // 기본값은 주소에 남기지 않음
     if (updated.get('sort') === 'latest') updated.delete('sort')
+    if (updated.get('status') === 'all') updated.delete('status')
     setParams(updated)
     window.scrollTo({ top: 0 })
   }
@@ -74,14 +86,16 @@ export default function MySentencesPage() {
 
   const items = list.data?.pages.flatMap((page) => page.items) ?? []
   const total = list.data?.pages[0].total ?? 0
+  const counts = list.data?.pages[0].counts ?? null
+  const chosen = FILTERS.find((item) => item.value === status)
 
   return (
     <ProfileFrame top={top}>
       <header className="flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="font-serif text-2xl font-semibold text-stone-900">내 문장</h1>
-        {list.data && (
+        {counts && (
           <p className="text-sm text-stone-500">
-            {q ? `찾은 문장 ${total}개` : `모두 ${total}개`}
+            {q ? `찾은 문장 ${counts.all}개` : `모두 ${counts.all}개`}
           </p>
         )}
       </header>
@@ -107,10 +121,25 @@ export default function MySentencesPage() {
         </div>
       </div>
 
-      {q && (
-        <p className="mt-2 text-xs text-stone-400">
-          지운 문장·신고 처리된 문장은 내용이 남아 있지 않아 찾을 수 없어요.
-        </p>
+      {counts && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {FILTERS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => change({ status: option.value })}
+              aria-current={status === option.value}
+              className={`min-h-11 rounded-full px-3 text-sm transition ${
+                status === option.value
+                  ? 'bg-stone-700 font-medium text-white'
+                  : 'border border-stone-200 bg-white text-stone-600 hover:bg-stone-100'
+              }`}
+            >
+              {option.label}{' '}
+              <span className="tabular-nums opacity-70">{counts[option.value]}</span>
+            </button>
+          ))}
+        </div>
       )}
 
       <div className="mt-4">
@@ -119,7 +148,17 @@ export default function MySentencesPage() {
         ) : list.isError ? (
           <Notice message={list.error.message} />
         ) : items.length === 0 ? (
-          <Notice message={q ? `"${q}"가 들어간 문장이 없어요.` : '아직 쓴 문장이 없어요.'}>
+          <Notice
+            message={
+              q
+                ? status === 'all'
+                  ? '찾은 문장이 없어요.'
+                  : `찾은 문장 중에 "${chosen?.label}"은 없어요.`
+                : status === 'all'
+                  ? '아직 쓴 문장이 없어요.'
+                  : `"${chosen?.label}"에 해당하는 문장이 없어요.`
+            }
+          >
             {q ? (
               <button
                 type="button"
