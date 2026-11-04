@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { deleteComment, type Comment } from '../api/forum.ts'
 import { useMe } from '../lib/useMe.ts'
 import { formatDate, formatTimeAgo } from '../lib/time.ts'
+import AuthorLink from './AuthorLink.tsx'
 import CommentInput from './CommentInput.tsx'
 import ReportButton from './ReportButton.tsx'
 
@@ -103,7 +104,11 @@ function CommentRow({
       </p>
 
       <p className="mt-1 flex flex-wrap items-center gap-1.5 text-[13px] text-stone-500">
-        <span className="font-medium text-stone-600">{comment.author_nickname}</span>
+        <AuthorLink
+          nickname={comment.author_nickname}
+          withdrawn={comment.author_withdrawn}
+          className="font-medium text-stone-600"
+        />
         <span aria-hidden className="text-stone-300">
           ·
         </span>

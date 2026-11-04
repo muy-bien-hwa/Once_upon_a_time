@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { fetchMySentences, type ProfileFilter, type ProfileSort } from '../api/profile.ts'
+import { PillButton, SearchBox } from '../components/ListControls.tsx'
 import LoginButton from '../components/LoginButton.tsx'
 import LogoutButton from '../components/LogoutButton.tsx'
 import Notice from '../components/Notice.tsx'
@@ -101,22 +101,20 @@ export default function MySentencesPage() {
       </header>
 
       <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
-        <SearchBox value={q} onSearch={(text) => change({ q: text })} />
+        <SearchBox
+          value={q}
+          onSearch={(text) => change({ q: text })}
+          placeholder="문장 속 낱말로 찾기"
+        />
         <div className="flex gap-1.5">
           {SORTS.map((option) => (
-            <button
+            <PillButton
               key={option.value}
-              type="button"
+              active={sort === option.value}
               onClick={() => change({ sort: option.value })}
-              aria-current={sort === option.value}
-              className={`min-h-11 rounded-full px-4 text-sm transition ${
-                sort === option.value
-                  ? 'bg-brand-600 font-medium text-white'
-                  : 'border border-stone-200 bg-white text-stone-600 hover:bg-stone-100'
-              }`}
             >
               {option.label}
-            </button>
+            </PillButton>
           ))}
         </div>
       </div>
@@ -124,20 +122,14 @@ export default function MySentencesPage() {
       {counts && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {FILTERS.map((option) => (
-            <button
+            <PillButton
               key={option.value}
-              type="button"
+              active={status === option.value}
               onClick={() => change({ status: option.value })}
-              aria-current={status === option.value}
-              className={`min-h-11 rounded-full px-3 text-sm transition ${
-                status === option.value
-                  ? 'bg-stone-700 font-medium text-white'
-                  : 'border border-stone-200 bg-white text-stone-600 hover:bg-stone-100'
-              }`}
+              tone="stone"
             >
-              {option.label}{' '}
-              <span className="tabular-nums opacity-70">{counts[option.value]}</span>
-            </button>
+              {option.label} <span className="tabular-nums opacity-70">{counts[option.value]}</span>
+            </PillButton>
           ))}
         </div>
       )}
@@ -199,50 +191,5 @@ export default function MySentencesPage() {
         )}
       </div>
     </ProfileFrame>
-  )
-}
-
-function SearchBox({ value, onSearch }: { value: string; onSearch: (text: string) => void }) {
-  const [draft, setDraft] = useState(value)
-  // 뒤로 가기로 주소의 검색어가 바뀌면 입력칸도 따라가게 (그릴 때 맞춤 — 효과로 하면 한 번 더 그려짐)
-  const [shown, setShown] = useState(value)
-  if (shown !== value) {
-    setShown(value)
-    setDraft(value)
-  }
-
-  return (
-    <form
-      className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 focus-within:border-brand-600"
-      onSubmit={(event) => {
-        event.preventDefault()
-        onSearch(draft.trim())
-      }}
-    >
-      <span aria-hidden className="text-stone-400">
-        🔍
-      </span>
-      {/* type="search"의 X는 글자만 지우고 목록은 그대로라 헷갈림 → 우리 "지우기"만 둠 */}
-      <input
-        type="text"
-        enterKeyHint="search"
-        id="my-sentence-search"
-        value={draft}
-        onChange={(event) => setDraft(event.target.value)}
-        maxLength={100}
-        placeholder="문장 속 낱말로 찾기"
-        aria-label="문장 속 낱말로 찾기"
-        className="min-h-11 min-w-0 flex-1 text-sm text-stone-800 outline-none placeholder:text-stone-400"
-      />
-      {value && (
-        <button
-          type="button"
-          onClick={() => onSearch('')}
-          className="shrink-0 text-sm text-stone-400 transition hover:text-stone-700"
-        >
-          지우기
-        </button>
-      )}
-    </form>
   )
 }

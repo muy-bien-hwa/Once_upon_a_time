@@ -14,6 +14,8 @@ export type PostSummary = {
   // 신고로 접히면 제목·작성자·본문·인용이 비어서 옴 (D-69와 같은 방식)
   title: string | null
   author_nickname: string | null
+  // 작성자가 탈퇴했는지 → 이름을 작가 화면 링크로 만들지 말지 (D-95)
+  author_withdrawn: boolean
   status: 'active' | 'folded'
   created_at: string
   up_count: number
@@ -49,6 +51,8 @@ export type Comment = {
   parent_id: number | null
   body: string | null
   author_nickname: string | null
+  // 작성자가 탈퇴했는지 → 이름을 작가 화면 링크로 만들지 말지 (D-95)
+  author_withdrawn: boolean
   status: 'active' | 'folded'
   // 누구에게 한 말인지 (@닉네임)
   reply_to_nickname: string | null

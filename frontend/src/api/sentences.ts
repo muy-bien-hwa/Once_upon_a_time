@@ -12,6 +12,8 @@ export type Sentence = {
   content: string | null
   status: SentenceStatus
   author_nickname: string | null
+  // 작성자가 탈퇴했는지 → 이름을 작가 화면 링크로 만들지 말지 (D-95)
+  author_withdrawn: boolean
   created_at: string
   up_count: number
   down_count: number

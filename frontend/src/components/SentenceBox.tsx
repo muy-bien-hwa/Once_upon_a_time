@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import type { Sentence } from '../api/sentences.ts'
 import { formatDate, formatTimeAgo } from '../lib/time.ts'
+import AuthorLink from './AuthorLink.tsx'
 import DeleteSentenceButton from './DeleteSentenceButton.tsx'
 import ReportButton from './ReportButton.tsx'
 import SentenceText from './SentenceText.tsx'
@@ -13,7 +14,10 @@ export default function SentenceBox({ sentence }: { sentence: Sentence }) {
       <article className="flex-1 rounded-lg bg-white p-4 shadow-paper ring-1 ring-stone-200/60 transition hover:shadow-paper-lift">
         <SentenceText sentence={sentence} />
         <div className="mt-3 flex items-center gap-2 text-xs text-stone-500">
-          {sentence.author_nickname && <span>{sentence.author_nickname}</span>}
+          <AuthorLink
+            nickname={sentence.author_nickname}
+            withdrawn={sentence.author_withdrawn}
+          />
           <time dateTime={sentence.created_at} title={formatDate(sentence.created_at)}>
             {formatTimeAgo(sentence.created_at)}
           </time>

@@ -47,6 +47,28 @@ export type ListOptions = {
   status?: ProfileFilter
 }
 
+export type Author = {
+  nickname: string
+  // 날짜까지는 공개하지 않음 — "2026-05" (D-95)
+  joined_month: string
+  sentence_count: number
+  story_count: number
+  received_up_count: number
+}
+
+export function fetchAuthor(nickname: string, signal?: AbortSignal) {
+  return apiGet<Author>(`/api/users/${encodeURIComponent(nickname)}`, signal)
+}
+
+export function fetchAuthorSentences(
+  nickname: string,
+  options: ListOptions,
+  signal?: AbortSignal,
+) {
+  const path = `/api/users/${encodeURIComponent(nickname)}/sentences`
+  return apiGet<ProfileSentenceList>(withOptions(path, options), signal)
+}
+
 export function fetchMySummary(signal?: AbortSignal) {
   return apiGet<MeSummary>('/api/me/summary', signal)
 }

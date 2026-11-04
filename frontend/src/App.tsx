@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router'
+import AuthorPage from './pages/AuthorPage.tsx'
 import ForumPage from './pages/ForumPage.tsx'
 import ForumPostPage from './pages/ForumPostPage.tsx'
 import MyPage from './pages/MyPage.tsx'
@@ -23,6 +24,7 @@ export default function App() {
       <Route path="/nickname" element={<NicknamePage />} />
       <Route path="/me" element={<MyPage />} />
       <Route path="/me/sentences" element={<MySentencesPage />} />
+      <Route path="/u/:nickname" element={<AuthorPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )

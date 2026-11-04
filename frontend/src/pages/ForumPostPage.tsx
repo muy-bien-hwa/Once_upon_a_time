@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { deletePost, fetchComments, fetchPost } from '../api/forum.ts'
 import AccountBar from '../components/AccountBar.tsx'
+import AuthorLink from '../components/AuthorLink.tsx'
 import CommentInput from '../components/CommentInput.tsx'
 import CommentList from '../components/CommentList.tsx'
 import ConfirmDialog from '../components/ConfirmDialog.tsx'
@@ -100,9 +101,11 @@ export default function ForumPostPage() {
                   <p className="mt-2 flex flex-wrap items-center gap-1.5 text-[13px] text-stone-500">
                     {post!.author_nickname && (
                       <>
-                        <span className="font-medium text-stone-600">
-                          {post!.author_nickname}
-                        </span>
+                        <AuthorLink
+                          nickname={post!.author_nickname}
+                          withdrawn={post!.author_withdrawn}
+                          className="font-medium text-stone-600"
+                        />
                         <span aria-hidden className="text-stone-300">
                           ·
                         </span>
