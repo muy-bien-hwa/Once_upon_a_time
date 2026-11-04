@@ -2,6 +2,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { Link, useSearchParams } from 'react-router'
 import { fetchMySentences, type ProfileFilter, type ProfileSort } from '../api/profile.ts'
 import { PillButton, SearchBox } from '../components/ListControls.tsx'
+import { ChevronLeft } from '../components/icons.tsx'
 import LoginButton from '../components/LoginButton.tsx'
 import LogoutButton from '../components/LogoutButton.tsx'
 import Notice from '../components/Notice.tsx'
@@ -58,9 +59,9 @@ export default function MySentencesPage() {
     <>
       <Link
         to="/me"
-        className="inline-flex min-h-11 items-center text-sm text-stone-500 transition hover:text-stone-800"
+        className="inline-flex min-h-11 items-center gap-1 text-sm text-stone-500 transition hover:text-stone-800"
       >
-        ‹ 마이페이지
+        <ChevronLeft className="h-4 w-4" /> 마이페이지
       </Link>
       {me && <LogoutButton />}
     </>

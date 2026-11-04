@@ -9,6 +9,8 @@ const PAGE_HEIGHT = LINE * LINES
 // 쪽과 쪽 사이 간격
 const GAP = 40
 
+import { ChevronLeft, ChevronRight } from './icons.tsx'
+
 // 지금까지의 이야기를 책처럼 보여줌: 한 쪽이 차면 옆 쪽으로 이어지고, ◀▶로 좌우로 넘김 (D-80)
 export default function StoryPages({ items }: { items: Sentence[] }) {
   const content = useRef<HTMLDivElement>(null)
@@ -77,7 +79,7 @@ export default function StoryPages({ items }: { items: Sentence[] }) {
           onClick={() => setPage((current) => current - 1)}
           className="rounded-lg px-3 py-1 hover:bg-stone-200/60 disabled:opacity-30 disabled:hover:bg-transparent"
         >
-          ◀
+          <ChevronLeft className="h-4 w-4" />
         </button>
         <span className="tabular-nums">
           {page + 1} / {pageCount}
@@ -89,7 +91,7 @@ export default function StoryPages({ items }: { items: Sentence[] }) {
           onClick={() => setPage((current) => current + 1)}
           className="rounded-lg px-3 py-1 hover:bg-stone-200/60 disabled:opacity-30 disabled:hover:bg-transparent"
         >
-          ▶
+          <ChevronRight className="h-4 w-4" />
         </button>
       </div>
     </div>

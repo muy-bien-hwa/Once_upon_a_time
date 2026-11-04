@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import type { PostSummary } from '../api/forum.ts'
 import { formatDate, formatTimeAgo } from '../lib/time.ts'
 import AuthorLink from './AuthorLink.tsx'
+import { CaretDown, CaretUp } from './icons.tsx'
 import PostVote from './PostVote.tsx'
 
 // 커뮤니티 글 목록의 한 줄 (D-42·D-91)
@@ -14,9 +15,9 @@ export default function PostCard({ post }: { post: PostSummary }) {
         <PostVote post={post} />
       ) : (
         <div className="flex w-9 shrink-0 flex-col items-center text-[13px] text-stone-300">
-          <span aria-hidden>▲</span>
+          <CaretUp />
           <span className="tabular-nums">{post.up_count - post.down_count}</span>
-          <span aria-hidden>▼</span>
+          <CaretDown />
         </div>
       )}
 

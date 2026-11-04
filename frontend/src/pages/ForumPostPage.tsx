@@ -7,6 +7,7 @@ import AuthorLink from '../components/AuthorLink.tsx'
 import CommentInput from '../components/CommentInput.tsx'
 import CommentList from '../components/CommentList.tsx'
 import ConfirmDialog from '../components/ConfirmDialog.tsx'
+import { CaretDown, CaretUp, ChevronLeft } from '../components/icons.tsx'
 import Notice from '../components/Notice.tsx'
 import PinButton from '../components/PinButton.tsx'
 import PostVote from '../components/PostVote.tsx'
@@ -57,9 +58,9 @@ export default function ForumPostPage() {
         <div className="flex items-center justify-between gap-3">
           <Link
             to={post ? `/stories/${post.story_id}/forum` : '/'}
-            className="text-sm text-stone-500 hover:text-stone-800"
+            className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-800"
           >
-            ← 커뮤니티
+            <ChevronLeft className="h-4 w-4" /> 커뮤니티
           </Link>
           <AccountBar />
         </div>
@@ -84,9 +85,9 @@ export default function ForumPostPage() {
                 ) : (
                   // 접힌 글에는 투표할 수 없음 (D-82)
                   <div className="flex w-9 shrink-0 flex-col items-center text-[13px] text-stone-300">
-                    <span aria-hidden>▲</span>
+                    <CaretUp />
                     <span className="tabular-nums">{post!.up_count - post!.down_count}</span>
-                    <span aria-hidden>▼</span>
+                    <CaretDown />
                   </div>
                 )}
                 <div className="min-w-0 flex-1">

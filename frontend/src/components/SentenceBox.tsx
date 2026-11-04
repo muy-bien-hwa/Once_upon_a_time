@@ -3,6 +3,7 @@ import type { Sentence } from '../api/sentences.ts'
 import { formatDate, formatTimeAgo } from '../lib/time.ts'
 import AuthorLink from './AuthorLink.tsx'
 import DeleteSentenceButton from './DeleteSentenceButton.tsx'
+import { CaretDown, CaretUp } from './icons.tsx'
 import ReportButton from './ReportButton.tsx'
 import SentenceText from './SentenceText.tsx'
 import VoteButtons from './VoteButtons.tsx'
@@ -10,9 +11,16 @@ import VoteButtons from './VoteButtons.tsx'
 // 가운데 목록의 문장 박스 하나. 누르면 그 문장으로 이동해서 한 칸 더 읽음
 export default function SentenceBox({ sentence }: { sentence: Sentence }) {
   return (
-    <Link to={`/s/${sentence.id}`} className="flex items-start gap-2">
-      <article className="flex-1 rounded-lg bg-white p-4 shadow-paper ring-1 ring-stone-200/60 transition hover:shadow-paper-lift">
-        <SentenceText sentence={sentence} />
+    // 박스를 누르면 그 문장으로 가되 링크 안에 링크를 넣지 않음 (브라우저가 싫어함)
+    // → 문장 글에 걸린 링크를 상자 전체로 넓히고(after:inset-0), 버튼들은 그 위로 올려 둠(z-10)
+    <div className="relative flex items-start gap-2">
+      <article className="flex-1 rounded-lg bg-white p-4 shadow-paper ring-1 ring-stone-200/60 transition hover:shadow-paper-lift has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-brand-600">
+        <Link
+          to={`/s/${sentence.id}`}
+          className="after:absolute after:inset-0 after:rounded-lg focus-visible:outline-none"
+        >
+          <SentenceText sentence={sentence} />
+        </Link>
         <div className="mt-3 flex items-center gap-2 text-xs text-stone-500">
           <AuthorLink
             nickname={sentence.author_nickname}
@@ -27,8 +35,12 @@ export default function SentenceBox({ sentence }: { sentence: Sentence }) {
             ) : (
               // 접힘·삭제된 문장에는 투표할 수 없음 (D-82)
               <>
-                <span className="opacity-40">▲ {sentence.up_count}</span>
-                <span className="opacity-40">▼ {sentence.down_count}</span>
+                <span className="inline-flex items-center gap-1 opacity-40">
+                  <CaretUp /> {sentence.up_count}
+                </span>
+                <span className="inline-flex items-center gap-1 opacity-40">
+                  <CaretDown /> {sentence.down_count}
+                </span>
               </>
             )}
             {/* 내가 쓴 문장만 지울 수 있음 (F-09) */}
@@ -58,7 +70,7 @@ export default function SentenceBox({ sentence }: { sentence: Sentence }) {
         </div>
       </article>
       <ChildCount count={sentence.child_count} />
-    </Link>
+    </div>
   )
 }
 

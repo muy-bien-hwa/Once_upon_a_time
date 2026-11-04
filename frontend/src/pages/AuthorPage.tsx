@@ -4,6 +4,7 @@ import { ApiError } from '../api/client.ts'
 import { fetchAuthor, fetchAuthorSentences, type ProfileSort } from '../api/profile.ts'
 import AccountBar from '../components/AccountBar.tsx'
 import { PillButton, SearchBox } from '../components/ListControls.tsx'
+import { ChevronLeft } from '../components/icons.tsx'
 import Notice from '../components/Notice.tsx'
 import ProfileFrame, { Panel } from '../components/ProfileLayout.tsx'
 import SentenceRow from '../components/SentenceRow.tsx'
@@ -49,9 +50,9 @@ export default function AuthorPage() {
     <>
       <Link
         to="/"
-        className="inline-flex min-h-11 items-center text-sm text-stone-500 transition hover:text-stone-800"
+        className="inline-flex min-h-11 items-center gap-1 text-sm text-stone-500 transition hover:text-stone-800"
       >
-        ‹ 홈
+        <ChevronLeft className="h-4 w-4" /> 홈
       </Link>
       <AccountBar />
     </>

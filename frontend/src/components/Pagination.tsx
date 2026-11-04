@@ -4,6 +4,8 @@ type Props = {
   onChange: (page: number) => void
 }
 
+import { ChevronLeft, ChevronRight } from './icons.tsx'
+
 // 페이지 번호 버튼 (D-57): ‹ 1 2 3 4 5 ›
 export default function Pagination({ page, totalPages, onChange }: Props) {
   if (totalPages <= 1) return null
@@ -21,7 +23,7 @@ export default function Pagination({ page, totalPages, onChange }: Props) {
         onClick={() => onChange(page - 1)}
         aria-label="이전 페이지"
       >
-        ‹
+        <ChevronLeft className="h-4 w-4" />
       </button>
       {pageWindow(page, totalPages).map((number) => (
         <button
@@ -45,7 +47,7 @@ export default function Pagination({ page, totalPages, onChange }: Props) {
         onClick={() => onChange(page + 1)}
         aria-label="다음 페이지"
       >
-        ›
+        <ChevronRight className="h-4 w-4" />
       </button>
     </nav>
   )

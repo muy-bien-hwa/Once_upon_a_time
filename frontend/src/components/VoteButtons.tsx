@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { cancelVote, voteSentence, type Sentence } from '../api/sentences.ts'
 import { useMe } from '../lib/useMe.ts'
+import { CaretDown, CaretUp } from './icons.tsx'
 import LoginButton from './LoginButton.tsx'
 
 // 문장 박스 안의 추천·비추천 버튼 (F-07)
@@ -36,7 +37,7 @@ export default function VoteButtons({ sentence }: { sentence: Sentence }) {
     <>
       <VoteButton
         label="추천"
-        mark="▲"
+        mark={<CaretUp />}
         tone="up"
         count={sentence.up_count}
         active={sentence.my_vote === 1}
@@ -45,7 +46,7 @@ export default function VoteButtons({ sentence }: { sentence: Sentence }) {
       />
       <VoteButton
         label="비추천"
-        mark="▼"
+        mark={<CaretDown />}
         tone="down"
         count={sentence.down_count}
         active={sentence.my_vote === -1}
@@ -78,7 +79,7 @@ function VoteButton({
   onPress,
 }: {
   label: string
-  mark: string
+  mark: ReactNode
   tone: 'up' | 'down'
   count: number
   active: boolean
@@ -101,7 +102,9 @@ function VoteButton({
         active ? PRESSED[tone] : 'text-stone-500 hover:bg-stone-100'
       } disabled:opacity-50`}
     >
-      {mark} {count}
+      <span className="inline-flex items-center gap-1">
+        {mark} {count}
+      </span>
     </button>
   )
 }

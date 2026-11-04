@@ -3,6 +3,7 @@ import { useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { createStory } from '../api/stories.ts'
 import ConfirmDialog from '../components/ConfirmDialog.tsx'
+import { ChevronLeft } from '../components/icons.tsx'
 import LoginNotice from '../components/LoginNotice.tsx'
 import { useMe } from '../lib/useMe.ts'
 
@@ -43,8 +44,11 @@ export default function NewStoryPage() {
   return (
     <main className="min-h-screen bg-paper px-4 py-8 sm:px-6">
       <div className="mx-auto max-w-2xl">
-        <Link to="/" className="text-sm text-stone-500 hover:text-stone-800">
-          ← 목록
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-800"
+        >
+          <ChevronLeft className="h-4 w-4" /> 목록
         </Link>
         <h1 className="mt-2 text-2xl font-bold text-stone-800">새 스토리 열기</h1>
         <p className="mt-1 text-sm text-stone-500">

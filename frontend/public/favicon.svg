@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="옛날 옛적에">
+  <!-- 브라우저 탭에 뜨는 그림: 펼친 책 (이모지 대신 직접 그림, 2026-11-05) -->
+  <rect width="64" height="64" rx="15" fill="#2f7d5a"/>
+  <g fill="none" stroke="#f7f4ee" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M32 20.5C27.5 17 22 16 16 17v27c6-1 11.5 0 16 3.5"/>
+    <path d="M32 20.5C36.5 17 42 16 48 17v27c-6-1-11.5 0-16 3.5"/>
+    <path d="M32 20.5v27"/>
+  </g>
+</svg>

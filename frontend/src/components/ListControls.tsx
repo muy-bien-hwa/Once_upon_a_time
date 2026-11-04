@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { SearchIcon } from './icons.tsx'
 
 // 내 문장·작가 화면이 함께 쓰는 검색칸과 알약 버튼 (6-7)
 // 누르는 것은 모두 세로 44px 이상 (손가락으로 눌러야 함)
@@ -28,9 +29,7 @@ export function SearchBox({
         onSearch(draft.trim())
       }}
     >
-      <span aria-hidden className="text-stone-400">
-        🔍
-      </span>
+      <SearchIcon className="h-4 w-4 shrink-0 text-stone-400" />
       {/* type="search"의 X는 글자만 지우고 목록은 그대로라 헷갈림 → 우리 "지우기"만 둠 */}
       <input
         type="text"

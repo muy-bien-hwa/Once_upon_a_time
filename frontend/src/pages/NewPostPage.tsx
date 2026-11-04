@@ -5,6 +5,7 @@ import { createPost } from '../api/forum.ts'
 import { fetchPath } from '../api/sentences.ts'
 import { fetchStory } from '../api/stories.ts'
 import ConfirmDialog from '../components/ConfirmDialog.tsx'
+import { ChevronLeft } from '../components/icons.tsx'
 import LoginNotice from '../components/LoginNotice.tsx'
 import { useMe } from '../lib/useMe.ts'
 
@@ -69,8 +70,11 @@ export default function NewPostPage() {
   return (
     <main className="min-h-screen bg-paper px-4 py-8 sm:px-6">
       <div className="mx-auto max-w-2xl">
-        <Link to={`/stories/${id}/forum`} className="text-sm text-stone-500 hover:text-stone-800">
-          ← 커뮤니티
+        <Link
+          to={`/stories/${id}/forum`}
+          className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-800"
+        >
+          <ChevronLeft className="h-4 w-4" /> 커뮤니티
         </Link>
         <h1 className="mt-2 text-2xl font-bold text-stone-800">글쓰기</h1>
         <p className="mt-1 text-sm text-stone-500">

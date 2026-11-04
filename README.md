@@ -1,7 +1,7 @@
 # Once upon a time (옛날 옛적에)
 
 > 한 문장씩 이어 쓰는 릴레이 스토리 웹앱 서비스
-- 서버 주소 : ['relaystory.kr'](relaystory.kr) 
+- 서버 주소: [relaystory.kr](https://relaystory.kr)
 
 - 누구나 문장(최대 100자)을 이어 써서 이야기를 만듦
 - 한 문장 뒤에 여러 문장이 이어지면서 이야기가 가지처럼 갈라짐
