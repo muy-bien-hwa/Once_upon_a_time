@@ -11,8 +11,8 @@ const INTERVAL = 5_000
 
 // 홈 맨 위 Hot 영역: 창 3개가 5초마다 돌아가며 보임 (D-76)
 export default function HotBoard() {
-  const [index, setIndex] = useState(0)
-  const [paused, setPaused] = useState(false)
+  const [index, setIndex] = useState(0)   // 지금 몇번째 창인지?
+  const [paused, setPaused] = useState(false)   // 마우스가 올라와 있는지? = paused
 
   useEffect(() => {
     if (paused) return
