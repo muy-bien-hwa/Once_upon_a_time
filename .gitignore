@@ -17,6 +17,10 @@ venv/
 *.db
 *.sqlite3
 
+# DB 백업 (사람들의 글이 통째로 들어 있음 — 올리지 말 것)
+backups/
+*.dump
+
 # Node
 node_modules/
 dist/
