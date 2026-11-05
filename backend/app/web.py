@@ -31,9 +31,13 @@ SHARE_END = "<!--/share-->"
 
 SITE_NAME = "옛날 옛적에"
 
+# 미리보기 그림 — 카톡은 그림이 없으면 글씨만 작게 보여 줌 (public/share.png, 1200x630)
+SHARE_IMAGE = "/share.png"
+
 
 def share_tags(title: str, description: str, url: str, kind: str = "website") -> str:
     """공유 카드에 들어갈 태그 (카톡·트위터가 이 태그를 읽어 미리보기를 만듦)"""
+    image = escape(f"{settings.backend_origin}{SHARE_IMAGE}", quote=True)
     title, description, url = (escape(value, quote=True) for value in (title, description, url))
     return (
         f"<title>{title}</title>"
@@ -42,8 +46,11 @@ def share_tags(title: str, description: str, url: str, kind: str = "website") ->
         f'<meta property="og:title" content="{title}">'
         f'<meta property="og:description" content="{description}">'
         f'<meta property="og:url" content="{url}">'
+        f'<meta property="og:image" content="{image}">'
+        f'<meta property="og:image:width" content="1200">'
+        f'<meta property="og:image:height" content="630">'
         f'<meta name="description" content="{description}">'
-        f'<meta name="twitter:card" content="summary">'
+        f'<meta name="twitter:card" content="summary_large_image">'
     )
 
 
