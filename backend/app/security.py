@@ -13,6 +13,12 @@ from app.config import settings
 COOKIE_NAME = "session"
 # 로그인 유지 기간
 COOKIE_DAYS = 30
+
+# 구글로 갔다 오는 동안만 쓰는 쿠키 (Authlib이 state를 담아 둠)
+# ⚠️ 로그인 쿠키와 이름이 같으면 안 됨 — 돌아오는 응답에서 같은 이름으로 덮어써 로그인 표가 지워짐
+OAUTH_COOKIE_NAME = "oauth"
+# 로그인 화면에 머무는 시간만 버티면 됨 (기본값 14일은 쓸데없이 길다)
+OAUTH_SECONDS = 600
 _ALGORITHM = "HS256"
 
 

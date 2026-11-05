@@ -9,6 +9,7 @@ from app import safety, web
 from app.config import settings
 from app.db import engine
 from app.routers import auth, forum, me, sentences, stats, stories, users
+from app.security import OAUTH_COOKIE_NAME, OAUTH_SECONDS
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +26,12 @@ app = FastAPI(
 safety.guard(app)
 
 # 구글 로그인 중간 단계(state)를 잠깐 보관하는 쿠키 (Authlib이 사용)
+# 이름을 로그인 쿠키와 다르게 둬야 함 — 같으면 돌아오는 길에 로그인 표가 지워진다 (security.py)
 app.add_middleware(
     SessionMiddleware,
     secret_key=settings.jwt_secret.get_secret_value() or "dev-only",
+    session_cookie=OAUTH_COOKIE_NAME,
+    max_age=OAUTH_SECONDS,
     https_only=settings.cookie_secure,
     same_site="lax",
 )
