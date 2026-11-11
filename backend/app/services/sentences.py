@@ -9,8 +9,16 @@ from sqlalchemy.orm import Session, aliased
 from app.config import settings
 from app.errors import api_error
 from app.models import Report, Sentence, SentenceVote, Story, User
-from app.schemas.sentence import PathOut, SentenceOut, SentenceSort, StoryRef
+from app.schemas.sentence import (
+    PathOut,
+    QuoteCandidate,
+    QuoteCandidateListOut,
+    SentenceOut,
+    SentenceSort,
+    StoryRef,
+)
 from app.services import limits, users
+from app.services.profiles import like_pattern
 from app.services.ranking import rank_score
 from app.timeutil import kst_now
 
@@ -103,6 +111,40 @@ def get_sentence(db: Session, sentence_id: int, user_id: int | None = None) -> S
     if not items:
         raise _not_found()
     return items[0]
+
+
+# 인용할 문장 찾기에서 한 번에 보여 주는 개수
+QUOTE_SEARCH_SIZE = 10
+
+
+def search_for_quote(db: Session, story_id: int, q: str, page: int = 1) -> QuoteCandidateListOut:
+    """그 스토리 안에서 낱말로 문장 찾기 (#38, D-102)
+
+    인용할 수 있는 문장(보이는 문장)만, 최신순으로 10개씩 — 인용 규칙(_check_quote)과 같은 범위
+    """
+    size = QUOTE_SEARCH_SIZE
+    q = q.strip()
+    if not q:
+        return QuoteCandidateListOut(items=[], page=page, size=size, total=0)
+    where = (
+        Sentence.story_id == story_id,
+        Sentence.status == "active",
+        Sentence.content.ilike(like_pattern(q), escape="\\"),
+    )
+    total = db.scalar(select(func.count()).select_from(Sentence).where(*where))
+    rows = db.execute(
+        select(Sentence.id, Sentence.content, User.nickname)
+        .join(User, User.id == Sentence.author_id)
+        .where(*where)
+        .order_by(Sentence.created_at.desc(), Sentence.id.desc())
+        .offset((page - 1) * size)
+        .limit(size)
+    )
+    items = [
+        QuoteCandidate(id=sentence_id, content=content, author_nickname=nickname)
+        for sentence_id, content, nickname in rows
+    ]
+    return QuoteCandidateListOut(items=items, page=page, size=size, total=total)
 
 
 def get_path(db: Session, sentence_id: int) -> PathOut:

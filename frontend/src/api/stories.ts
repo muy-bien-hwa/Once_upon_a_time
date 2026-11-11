@@ -54,6 +54,25 @@ export function fetchStories(query: StoryListQuery, signal?: AbortSignal) {
   return apiGet<StoryList>(`/api/stories?${params}`, signal)
 }
 
+// 커뮤니티 글쓰기에서 인용할 문장 찾기 (#38, D-102) — 그 스토리의 보이는 문장만, 최신순 10개씩
+export type QuoteCandidate = {
+  id: number
+  content: string
+  // 탈퇴한 작가의 문장이면 null
+  author_nickname: string | null
+}
+
+export type QuoteCandidateList = {
+  items: QuoteCandidate[]
+  page: number
+  size: number
+  total: number
+}
+
+export function searchSentences(storyId: number, q: string, page: number, signal?: AbortSignal) {
+  const params = new URLSearchParams({ q, page: String(page) })
+  return apiGet<QuoteCandidateList>(`/api/stories/${storyId}/sentences?${params}`, signal)
+}
 
 // 추천 누르기 / 다시 누르면 취소 (F-13). 둘 다 바뀐 스토리를 돌려줌
 export function recommendStory(storyId: number) {

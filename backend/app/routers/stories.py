@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Query
 
 from app.deps import CurrentAuthor, CurrentUser, DbSession, OptionalUser
+from app.schemas.sentence import QuoteCandidateListOut
 from app.schemas.story import (
     StoryAuthorsOut,
     StoryCreate,
@@ -15,6 +16,7 @@ from app.schemas.story import (
 )
 from app.services import managers as manager_service
 from app.services import recommendations as recommendation_service
+from app.services import sentences as sentence_service
 from app.services import stories as story_service
 
 router = APIRouter(prefix="/api/stories", tags=["stories"])
@@ -42,6 +44,18 @@ def create_story(data: StoryCreate, db: DbSession, user: CurrentAuthor) -> Story
 def get_story(story_id: int, db: DbSession, user: OptionalUser) -> StoryOut:
     """스토리 하나 (#3)"""
     return story_service.get_story(db, story_id, user_id=user.id if user else None)
+
+
+@router.get("/{story_id}/sentences")
+def search_sentences(
+    story_id: int,
+    db: DbSession,
+    q: Annotated[str, Query(min_length=1, max_length=100)],
+    page: Annotated[int, Query(ge=1)] = 1,
+) -> QuoteCandidateListOut:
+    """그 스토리 안에서 문장 찾기 — 커뮤니티 글쓰기에서 인용할 문장을 고를 때 (#38, D-102)"""
+    story_service.find_visible_story(db, story_id)
+    return sentence_service.search_for_quote(db, story_id, q, page)
 
 
 @router.put("/{story_id}/recommendation")

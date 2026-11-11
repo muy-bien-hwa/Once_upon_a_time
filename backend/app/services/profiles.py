@@ -144,11 +144,11 @@ def _where(author_id: int, statuses: tuple[str, ...], q: str | None = None):
     ]
     if q:
         # 가려진 문장도 함께 찾음 — 내가 쓴 내 문장이므로 (본문은 여전히 보내지 않음)
-        conditions.append(Sentence.content.ilike(_like(q), escape="\\"))
+        conditions.append(Sentence.content.ilike(like_pattern(q), escape="\\"))
     return conditions
 
 
-def _like(text: str) -> str:
+def like_pattern(text: str) -> str:
     """찾는 글자 그대로 찾기 — %나 _를 쳐도 '아무 글자'로 해석되지 않게"""
     for letter in ("\\", "%", "_"):
         text = text.replace(letter, "\\" + letter)

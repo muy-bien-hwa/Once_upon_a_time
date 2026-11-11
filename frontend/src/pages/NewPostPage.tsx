@@ -1,27 +1,26 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type ReactNode } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import { createPost } from '../api/forum.ts'
-import { fetchPath } from '../api/sentences.ts'
-import { fetchStory } from '../api/stories.ts'
+import { fetchStory, type QuoteCandidate } from '../api/stories.ts'
 import ConfirmDialog from '../components/ConfirmDialog.tsx'
 import { ChevronLeft } from '../components/icons.tsx'
 import LoginNotice from '../components/LoginNotice.tsx'
+import QuotePicker from '../components/QuotePicker.tsx'
 import { useMe } from '../lib/useMe.ts'
 
 const TITLE_MAX = 100
 const BODY_MAX = 5000
 
 // 커뮤니티 글쓰기 (F-17·D-91)
-// 읽기 화면에서 [이 문장으로 글쓰기]로 오면 ?quote=문장번호가 붙어 인용이 채워짐
+// 인용할 문장은 이 화면에서 낱말로 찾아 고름 (D-102 — 읽기 화면의 [글쓰기] 버튼은 없앰)
 export default function NewPostPage() {
   const { storyId } = useParams()
   const id = Number(storyId)
-  const [searchParams] = useSearchParams()
-  const quoteId = Number(searchParams.get('quote')) || undefined
 
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
+  const [quote, setQuote] = useState<QuoteCandidate | null>(null)
   const [confirming, setConfirming] = useState(false)
   const { data: me } = useMe()
   const navigate = useNavigate()
@@ -32,23 +31,13 @@ export default function NewPostPage() {
     queryFn: ({ signal }) => fetchStory(id, signal),
     enabled: Number.isInteger(id) && id > 0,
   })
-  // 인용할 문장의 내용 (경로 조회의 마지막 문장이 그 문장)
-  const quoteQuery = useQuery({
-    queryKey: ['path', quoteId],
-    queryFn: ({ signal }) => fetchPath(quoteId!, signal),
-    enabled: quoteId !== undefined,
-  })
-  // 주소를 고쳐 다른 스토리 문장을 인용하려 하면 인용 없이 쓰게 함 (서버도 거절함)
-  const quotedStoryId = quoteQuery.data?.story.id
-  const sameStory = quotedStoryId === undefined || quotedStoryId === id
-  const quote = sameStory ? quoteQuery.data?.items.at(-1) : undefined
 
   const write = useMutation({
     mutationFn: () =>
       createPost(id, {
         title: title.trim(),
         body: body.trim(),
-        ...(quoteId && sameStory ? { quoted_sentence_id: quoteId } : {}),
+        ...(quote ? { quoted_sentence_id: quote.id } : {}),
       }),
     onSuccess: (post) => {
       queryClient.invalidateQueries({ queryKey: ['posts'] })
@@ -91,19 +80,7 @@ export default function NewPostPage() {
               if (canSubmit) setConfirming(true)
             }}
           >
-            {!sameStory && (
-              <p className="mb-5 rounded-lg bg-stone-100 p-3 text-sm text-stone-500">
-                다른 스토리의 문장은 인용할 수 없어서, 인용 없이 글만 올라갑니다.
-              </p>
-            )}
-            {quote && (
-              <p className="mb-5 border-l-2 border-brand-600 bg-brand-50/60 py-2 pl-4 font-serif text-[15px] text-stone-700">
-                “{quote.content}”
-                <span className="mt-1 block text-[13px] text-stone-500">
-                  이 문장을 인용해서 씁니다
-                </span>
-              </p>
-            )}
+            <QuotePicker storyId={id} value={quote} onChange={setQuote} />
 
             <Field label="제목" length={[...title].length} max={TITLE_MAX}>
               <input

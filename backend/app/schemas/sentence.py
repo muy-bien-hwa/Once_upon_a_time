@@ -60,3 +60,20 @@ class PathOut(BaseModel):
 
     story: StoryRef
     items: list[SentenceOut]
+
+
+class QuoteCandidate(BaseModel):
+    """커뮤니티 글쓰기에서 인용할 문장을 찾을 때 보여 주는 한 줄 (#38, D-102)"""
+
+    id: int
+    content: str
+    # 탈퇴한 작가의 문장이면 null
+    author_nickname: str | None
+
+
+class QuoteCandidateListOut(BaseModel):
+    items: list[QuoteCandidate]
+    # [더 보기]용 — 다른 목록과 같은 모양 (D-57)
+    page: int
+    size: int
+    total: int
