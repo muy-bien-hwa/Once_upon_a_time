@@ -31,7 +31,7 @@ export default function HotBoard() {
       onBlur={() => setPaused(false)}
     >
       <div className="flex items-center gap-2">
-        <h2 className="text-xl font-bold tracking-tight text-stone-800">{PANES[index].label}</h2>
+        <h2 className="text-lg font-bold tracking-tight text-stone-800">{PANES[index].label}</h2>
         <div className="ml-auto flex gap-2">
           {PANES.map((pane, i) => (
             <button

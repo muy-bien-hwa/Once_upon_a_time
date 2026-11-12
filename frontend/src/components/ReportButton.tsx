@@ -106,9 +106,7 @@ export default function ReportButton({
         className={
           variant === 'text'
             ? 'rounded px-1.5 py-0.5 hover:bg-stone-100 hover:text-stone-800 disabled:hover:bg-transparent'
-            : `relative z-10 shrink-0 rounded-full border border-stone-200 text-stone-500 transition hover:border-stone-400 hover:text-stone-700 ${
-                small ? 'px-2.5 py-0.5 text-xs' : 'px-3 py-1 text-sm'
-              }`
+            : `btn btn-fold z-10 ${small ? 'btn-sm' : ''}`
         }
       >
         {already ? '신고했어요' : '신고'}
@@ -156,11 +154,7 @@ export default function ReportButton({
                   type="button"
                   aria-pressed={reason === item.value}
                   onClick={() => setReason(item.value)}
-                  className={`rounded-full border px-3 py-1 transition ${
-                    reason === item.value
-                      ? 'border-down-600 bg-down-600/10 font-medium text-down-600'
-                      : 'border-stone-200 text-stone-600 hover:border-stone-400'
-                  }`}
+                  className={`btn btn-tag btn-sm ${reason === item.value ? 'btn-down' : ''}`}
                 >
                   {item.label}
                 </button>

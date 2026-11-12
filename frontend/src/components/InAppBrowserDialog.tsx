@@ -45,14 +45,14 @@ export default function InAppBrowserDialog({ app, open, onClose }: Props) {
           onClick={async () => {
             setMessage((await copyText(url)) ? '복사했어요' : '복사하지 못했어요. 주소를 길게 눌러 복사해 주세요')
           }}
-          className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
+          className="btn btn-tag btn-primary"
         >
           주소 복사
         </button>
         {isAndroid() && (
           <a
             href={chromeIntentUrl(url)}
-            className="rounded-lg border border-stone-300 px-4 py-2 text-sm text-stone-700 hover:border-brand-600 hover:text-brand-700"
+            className="btn btn-tag"
           >
             크롬으로 열기
           </a>
@@ -60,7 +60,7 @@ export default function InAppBrowserDialog({ app, open, onClose }: Props) {
         <button
           type="button"
           onClick={onClose}
-          className="ml-auto rounded-lg px-3 py-2 text-sm text-stone-600 hover:bg-stone-100"
+          className="btn btn-tag ml-auto"
         >
           닫기
         </button>

@@ -67,7 +67,7 @@ export default function CommentInput({ postId, parentId, replyTo, onDone }: Prop
           <button
             type="button"
             onClick={onDone}
-            className="ml-auto rounded-lg px-3 py-1.5 text-stone-600 hover:bg-stone-100"
+            className="btn btn-tag ml-auto"
           >
             취소
           </button>
@@ -75,9 +75,7 @@ export default function CommentInput({ postId, parentId, replyTo, onDone }: Prop
         <button
           type="submit"
           disabled={!canSubmit}
-          className={`rounded-lg bg-brand-600 px-4 py-1.5 font-medium text-white hover:bg-brand-700 disabled:opacity-40 ${
-            onDone ? '' : 'ml-auto'
-          }`}
+          className={`btn btn-tag btn-primary ${onDone ? '' : 'ml-auto'}`}
         >
           {write.isPending ? '등록 중…' : '등록'}
         </button>

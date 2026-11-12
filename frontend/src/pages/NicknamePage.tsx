@@ -30,7 +30,7 @@ export default function NicknamePage() {
   return (
     <main className="min-h-screen bg-paper px-4 py-10 sm:px-6">
       <div className="mx-auto max-w-md">
-        <h1 className="text-center text-2xl font-bold text-stone-900">닉네임 정하기</h1>
+        <h1 className="text-center font-serif text-2xl font-semibold text-stone-900">닉네임 정하기</h1>
         <p className="mt-2 text-center text-sm text-stone-500">
           문장 옆에 표시되는 이름이에요. 2~12자, 다른 사람과 겹칠 수 없어요.
           <br />한 번 정하면 2주 동안 바꿀 수 없어요.
@@ -85,13 +85,13 @@ export default function NicknamePage() {
             {save.isError && <p className="mt-4 text-sm text-red-500">{save.error.message}</p>}
 
             <div className="mt-6 flex justify-end gap-2">
-              <Link to="/" className="rounded-lg px-3 py-2 text-sm text-stone-600 hover:bg-stone-100">
+              <Link to="/" className="btn btn-tag">
                 나중에
               </Link>
               <button
                 type="submit"
                 disabled={!canSubmit}
-                className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-40"
+                className="btn btn-tag btn-primary"
               >
                 {save.isPending ? '저장 중…' : '정하기'}
               </button>

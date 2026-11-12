@@ -4,7 +4,6 @@ import { Link, useNavigate, useParams } from 'react-router'
 import { createPost } from '../api/forum.ts'
 import { fetchStory, type QuoteCandidate } from '../api/stories.ts'
 import ConfirmDialog from '../components/ConfirmDialog.tsx'
-import { ChevronLeft } from '../components/icons.tsx'
 import LoginNotice from '../components/LoginNotice.tsx'
 import QuotePicker from '../components/QuotePicker.tsx'
 import { useMe } from '../lib/useMe.ts'
@@ -61,11 +60,11 @@ export default function NewPostPage() {
       <div className="mx-auto max-w-2xl">
         <Link
           to={`/stories/${id}/forum`}
-          className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-800"
+          className="btn btn-nav"
         >
-          <ChevronLeft className="h-4 w-4" /> 커뮤니티
+          커뮤니티
         </Link>
-        <h1 className="mt-2 text-2xl font-bold text-stone-800">글쓰기</h1>
+        <h1 className="mt-3 font-serif text-2xl font-semibold text-stone-900">글쓰기</h1>
         <p className="mt-1 text-sm text-stone-500">
           {storyQuery.data?.title ?? '…'} 커뮤니티에 올라갑니다. 글은 나중에 고칠 수 없어요.
         </p>
@@ -110,14 +109,14 @@ export default function NewPostPage() {
             <div className="mt-6 flex justify-end gap-2">
               <Link
                 to={`/stories/${id}/forum`}
-                className="rounded-lg px-3 py-2 text-sm text-stone-600 hover:bg-stone-100"
+                className="btn btn-tag"
               >
                 취소
               </Link>
               <button
                 type="submit"
                 disabled={!canSubmit}
-                className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-40"
+                className="btn btn-tag btn-primary"
               >
                 올리기
               </button>

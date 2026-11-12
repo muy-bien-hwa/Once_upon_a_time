@@ -64,9 +64,10 @@ export default function VoteButtons({ sentence }: { sentence: Sentence }) {
 }
 
 // 누른 표만 색을 채움: 추천은 초록, 비추천은 빨강 (D-87, 색 구분은 PM 요청 2026-10-15)
+// 누르기 전에는 바탕 없이 연하게 — 옆의 신고 버튼과 겹쳐 보이지 않게 (D-103)
 const PRESSED = {
-  up: 'bg-brand-600 font-medium text-white',
-  down: 'bg-down-600 font-medium text-white',
+  up: 'btn-on',
+  down: 'btn-down',
 }
 
 function VoteButton({
@@ -98,9 +99,7 @@ function VoteButton({
         event.stopPropagation()
         onPress()
       }}
-      className={`relative z-10 rounded-full px-2 py-0.5 tabular-nums transition ${
-        active ? PRESSED[tone] : 'text-stone-500 hover:bg-stone-100'
-      } disabled:opacity-50`}
+      className={`btn btn-tag btn-vote z-10 tabular-nums ${active ? PRESSED[tone] : 'btn-quiet'}`}
     >
       <span className="inline-flex items-center gap-1">
         {mark} {count}

@@ -37,7 +37,7 @@ export default function ShareButton({ title }: { title: string }) {
       <button
         type="button"
         onClick={share}
-        className="rounded-full border border-stone-300 px-3 py-1.5 text-sm text-stone-600 hover:border-brand-600 hover:text-brand-700"
+        className="btn btn-fold btn-sm"
       >
         공유
       </button>

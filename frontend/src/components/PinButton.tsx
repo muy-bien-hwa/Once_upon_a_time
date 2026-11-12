@@ -28,7 +28,7 @@ export default function PinButton({ post }: { post: Post }) {
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm text-stone-600 hover:border-brand-600 hover:text-brand-700"
+        className="btn btn-tag"
       >
         {pinned ? '고정 해제' : '고정하기'}
       </button>

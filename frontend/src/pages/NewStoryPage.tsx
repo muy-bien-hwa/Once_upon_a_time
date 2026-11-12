@@ -3,7 +3,6 @@ import { useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { createStory } from '../api/stories.ts'
 import ConfirmDialog from '../components/ConfirmDialog.tsx'
-import { ChevronLeft } from '../components/icons.tsx'
 import LoginNotice from '../components/LoginNotice.tsx'
 import { useMe } from '../lib/useMe.ts'
 
@@ -46,11 +45,11 @@ export default function NewStoryPage() {
       <div className="mx-auto max-w-2xl">
         <Link
           to="/"
-          className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-800"
+          className="btn btn-nav"
         >
-          <ChevronLeft className="h-4 w-4" /> 목록
+          목록
         </Link>
-        <h1 className="mt-2 text-2xl font-bold text-stone-800">새 스토리 열기</h1>
+        <h1 className="mt-3 font-serif text-2xl font-semibold text-stone-900">새 스토리 열기</h1>
         <p className="mt-1 text-sm text-stone-500">
           제목과 첫 문장을 쓰면 다른 작가들이 뒤를 이어 씁니다.
         </p>
@@ -91,13 +90,13 @@ export default function NewStoryPage() {
           {create.isError && <p className="mt-4 text-sm text-red-500">{create.error.message}</p>}
 
           <div className="mt-6 flex justify-end gap-2">
-            <Link to="/" className="rounded-lg px-3 py-2 text-sm text-stone-600 hover:bg-stone-100">
+            <Link to="/" className="btn btn-tag">
               취소
             </Link>
             <button
               type="submit"
               disabled={!canSubmit}
-              className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-40"
+              className="btn btn-tag btn-primary"
             >
               스토리 열기
             </button>

@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { SearchIcon } from './icons.tsx'
 
-// 내 문장·작가 화면이 함께 쓰는 검색칸과 알약 버튼 (6-7)
+// 내 문장·작가 화면이 함께 쓰는 검색칸과 고르는 버튼 (6-7) — 모양은 꼬리표 (D-103)
 // 누르는 것은 모두 세로 44px 이상 (손가락으로 눌러야 함)
 
 export function SearchBox({
@@ -67,18 +67,14 @@ export function PillButton({
   children: ReactNode
   tone?: 'brand' | 'stone'
 }) {
-  const on = tone === 'brand' ? 'bg-brand-600' : 'bg-stone-700'
+  const on = tone === 'brand' ? 'btn-on' : 'btn-ink'
 
   return (
     <button
       type="button"
       onClick={onClick}
       aria-current={active}
-      className={`min-h-11 rounded-full px-3.5 text-sm transition ${
-        active
-          ? `${on} font-medium text-white`
-          : 'border border-stone-200 bg-white text-stone-600 hover:bg-stone-100'
-      }`}
+      className={`btn btn-tag min-h-11 ${active ? on : ''}`}
     >
       {children}
     </button>

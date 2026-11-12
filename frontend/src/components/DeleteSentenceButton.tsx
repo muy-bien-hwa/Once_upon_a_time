@@ -54,9 +54,7 @@ export default function DeleteSentenceButton({ sentence, onDeleted, small = fals
           event.stopPropagation()
           setOpen(true)
         }}
-        className={`relative z-10 shrink-0 rounded-full border border-down-600/40 font-medium text-down-600 transition hover:border-down-600 hover:bg-down-600/10 ${
-          small ? 'px-2.5 py-0.5 text-xs' : 'px-3 py-1 text-sm'
-        }`}
+        className={`btn btn-tag z-10 text-down-600 hover:text-down-600 ${small ? 'btn-sm' : ''}`}
       >
         삭제
       </button>

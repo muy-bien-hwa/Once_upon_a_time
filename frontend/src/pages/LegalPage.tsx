@@ -6,7 +6,6 @@ import {
   type LegalBlock,
   type LegalDoc,
 } from '../content/legal.ts'
-import { ChevronLeft } from '../components/icons.tsx'
 
 // 이용약관·운영정책·개인정보 처리방침을 같은 틀로 보여 줌 (D-95)
 // 본문은 content/ 안의 데이터이고, 여기서는 그리기만 함
@@ -18,9 +17,9 @@ export default function LegalPage({ doc }: { doc: LegalDoc }) {
       <div className="mx-auto max-w-3xl">
         <Link
           to="/"
-          className="inline-flex min-h-11 items-center gap-1 text-sm text-stone-500 transition hover:text-stone-800"
+          className="btn btn-nav"
         >
-          <ChevronLeft className="h-4 w-4" /> 홈
+          홈
         </Link>
 
         <header className="mt-2">
@@ -36,11 +35,7 @@ export default function LegalPage({ doc }: { doc: LegalDoc }) {
               key={page.path}
               to={page.path}
               aria-current={page.path === here ? 'page' : undefined}
-              className={`inline-flex min-h-11 items-center rounded-full px-3.5 text-sm transition ${
-                page.path === here
-                  ? 'bg-brand-600 font-medium text-white'
-                  : 'border border-stone-200 bg-white text-stone-600 hover:bg-stone-100'
-              }`}
+              className={`btn btn-tag min-h-11 ${page.path === here ? 'btn-on' : ''}`}
             >
               {page.label}
             </Link>

@@ -68,7 +68,7 @@ export default function ConfirmDialog({
             type="button"
             onClick={onCancel}
             disabled={busy}
-            className="rounded-lg px-3 py-2 text-sm text-stone-600 hover:bg-stone-100 disabled:opacity-50"
+            className="btn btn-tag"
           >
             {cancelLabel}
           </button>
@@ -77,9 +77,7 @@ export default function ConfirmDialog({
           type="button"
           onClick={onConfirm}
           disabled={busy || confirmDisabled}
-          className={`rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50 ${
-            danger ? 'bg-down-600 hover:bg-down-600/90' : 'bg-brand-600 hover:bg-brand-700'
-          }`}
+          className={`btn btn-tag ${danger ? 'btn-danger' : 'btn-primary'}`}
         >
           {busy ? (busyLabel ?? '처리 중…') : confirmLabel}
         </button>

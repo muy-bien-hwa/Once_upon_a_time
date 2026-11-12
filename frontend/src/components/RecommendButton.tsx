@@ -31,7 +31,7 @@ export default function RecommendButton({ story }: { story: Story }) {
   }
 
   return (
-    <div className="relative z-10 ml-auto shrink-0">
+    <div className="relative z-10 shrink-0">
       <button
         type="button"
         aria-pressed={story.my_recommendation}
@@ -47,11 +47,7 @@ export default function RecommendButton({ story }: { story: Story }) {
           }
           press.mutate()
         }}
-        className={`rounded-full border px-3 py-1 tabular-nums transition ${
-          story.my_recommendation
-            ? 'border-brand-600 bg-brand-600 font-medium text-white'
-            : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50'
-        } disabled:opacity-50`}
+        className={`btn btn-tag btn-sm tabular-nums ${story.my_recommendation ? 'btn-on' : ''}`}
       >
         추천 {story.recommend_count}
       </button>
@@ -70,7 +66,7 @@ export default function RecommendButton({ story }: { story: Story }) {
 function Count({ count }: { count: number }) {
   // 누를 수 없게 두어 이 자리를 눌러도 카드 링크가 그대로 동작
   return (
-    <span className="pointer-events-none ml-auto shrink-0 rounded-full border border-stone-200 px-3 py-1 text-stone-400 tabular-nums">
+    <span className="btn btn-tag btn-sm pointer-events-none text-stone-400 tabular-nums">
       추천 {count}
     </span>
   )

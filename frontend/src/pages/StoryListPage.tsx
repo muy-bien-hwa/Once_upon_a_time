@@ -62,8 +62,8 @@ export default function StoryListPage() {
           <AccountBar />
         </div>
 
-        <header className="py-6 text-center sm:py-10">
-          <h1 className="text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl">
+        <header className="pt-6 pb-12 text-center sm:pt-10 sm:pb-[4.5rem]">
+          <h1 className="font-serif text-4xl font-semibold tracking-tight text-stone-900 sm:text-5xl">
             옛날 옛적에
           </h1>
           <HomeCounts />
@@ -74,7 +74,7 @@ export default function StoryListPage() {
         <div className="mt-6 flex justify-center">
           <Link
             to="/stories/new"
-            className="rounded-full bg-brand-600 px-6 py-3 font-medium text-white transition hover:bg-brand-700"
+            className="btn btn-fold btn-lg btn-primary"
           >
             새 스토리
           </Link>
@@ -112,7 +112,7 @@ export default function StoryListPage() {
                     : 'text-stone-500'
                 }`}
               >
-                {value}열
+                {value === 1 ? '1열' : '여러 열'}
               </button>
             ))}
           </div>
@@ -162,9 +162,9 @@ export default function StoryListPage() {
             </Notice>
           ) : (
             <>
-              {/* 카드 배치: 1열 · 2열 선택 (좁은 화면에서는 항상 1열) */}
+              {/* 카드 배치: 1열 · 여러 열(화면 폭에 따라 2~3열) 선택 (좁은 화면에서는 항상 1열) */}
               <ul
-                className={`grid gap-3 ${columns === 2 ? 'sm:grid-cols-2' : ''} ${
+                className={`grid gap-3.5 ${columns === 2 ? 'sm:grid-cols-2 lg:grid-cols-3' : ''} ${
                   isPlaceholderData ? 'opacity-60' : ''
                 } transition-opacity`}
               >
@@ -212,7 +212,7 @@ function Skeleton() {
   return (
     <ul className="space-y-3" aria-label="불러오는 중">
       {[0, 1, 2].map((i) => (
-        <li key={i} className="h-32 animate-pulse rounded-lg bg-stone-200/70" />
+        <li key={i} className="h-56 animate-pulse rounded-lg bg-stone-200/70" />
       ))}
     </ul>
   )

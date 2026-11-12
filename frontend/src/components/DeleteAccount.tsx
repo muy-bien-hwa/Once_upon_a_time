@@ -39,7 +39,7 @@ export default function DeleteAccount({ nickname }: { nickname: string | null })
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-3 inline-flex min-h-11 items-center self-start rounded-lg border border-down-600/40 px-3 text-sm text-down-600 transition hover:bg-down-600/5"
+        className="btn btn-tag mt-3 self-start text-down-600 hover:text-down-600"
       >
         계정 삭제
       </button>

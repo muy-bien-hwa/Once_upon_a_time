@@ -15,7 +15,7 @@ export default function LogoutButton() {
       type="button"
       onClick={() => signOut.mutate()}
       disabled={signOut.isPending}
-      className="inline-flex min-h-11 items-center rounded-lg border border-stone-200 bg-white px-3 text-sm text-stone-600 transition hover:text-stone-900 disabled:opacity-50"
+      className="btn btn-tag btn-sm"
     >
       로그아웃
     </button>

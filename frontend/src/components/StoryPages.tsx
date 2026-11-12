@@ -53,7 +53,7 @@ export default function StoryPages({ items }: { items: Sentence[] }) {
           {/* 글을 쪽 너비의 단으로 흘려보냄 → 한 쪽이 차면 옆 쪽으로 이어짐 */}
           <div
             ref={content}
-            className="font-serif text-[18px] text-stone-700"
+            className="font-serif text-[17px] text-stone-700"
             style={{
               height: PAGE_HEIGHT,
               lineHeight: `${LINE}px`,
@@ -63,8 +63,19 @@ export default function StoryPages({ items }: { items: Sentence[] }) {
             }}
           >
             {items.map((sentence, index) => (
-              <p key={sentence.id} className="break-inside-avoid">
-                <Piece sentence={sentence} current={index === items.length - 1} />
+              <p
+                key={sentence.id}
+                className="break-inside-avoid sm:flex sm:items-baseline sm:gap-3"
+              >
+                <span className="sm:min-w-0 sm:flex-1">
+                  <Piece sentence={sentence} current={index === items.length - 1} />
+                </span>
+                {/* 문장 옆 여백에 작게 적는 작가 이름 (D-103) — 좁은 화면에서는 문장 끝에 붙음 */}
+                {sentence.status === 'active' && (
+                  <span className="ml-2 font-sans text-xs text-stone-400 sm:ml-0 sm:shrink-0">
+                    {sentence.author_nickname ?? '탈퇴한 작가'}
+                  </span>
+                )}
               </p>
             ))}
           </div>

@@ -95,7 +95,7 @@ export default function SentenceInput({ parent }: { parent: Sentence }) {
             setText('')
             write.reset()
           }}
-          className="ml-auto rounded-lg px-3 py-1.5 text-stone-600 hover:bg-stone-100"
+          className="btn btn-tag ml-auto"
         >
           취소
         </button>
@@ -103,7 +103,7 @@ export default function SentenceInput({ parent }: { parent: Sentence }) {
           type="button"
           disabled={!canSubmit}
           onClick={() => setConfirming(true)}
-          className="rounded-lg bg-brand-600 px-4 py-1.5 font-medium text-white hover:bg-brand-700 disabled:opacity-40"
+          className="btn btn-tag btn-primary"
         >
           등록
         </button>

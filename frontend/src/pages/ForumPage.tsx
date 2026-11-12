@@ -61,11 +61,7 @@ export default function ForumPage() {
                 type="button"
                 onClick={() => change({ sort: option.value, page: 1 })}
                 aria-current={sort === option.value}
-                className={`rounded-lg px-3 py-1.5 text-sm transition ${
-                  sort === option.value
-                    ? 'bg-brand-600 font-medium text-white'
-                    : 'text-stone-600 hover:bg-stone-200'
-                }`}
+                className={`btn btn-tag btn-sm ${sort === option.value ? 'btn-on' : ''}`}
               >
                 {option.label}
               </button>
@@ -75,13 +71,13 @@ export default function ForumPage() {
           <button
             type="button"
             onClick={() => setAuthorsOpen(true)}
-            className="ml-auto rounded-full border border-stone-300 px-4 py-2 text-sm text-stone-600 transition hover:border-brand-600 hover:text-brand-700"
+            className="btn btn-tag ml-auto"
           >
             스토리 작가 목록
           </button>
           <Link
             to={`/stories/${id}/forum/new`}
-            className="rounded-full bg-brand-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-700"
+            className="btn btn-fold btn-primary"
           >
             글쓰기
           </Link>

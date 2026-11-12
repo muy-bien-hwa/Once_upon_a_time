@@ -54,7 +54,7 @@ export default function AuthorListDialog({ storyId, open, onClose }: Props) {
         <button
           type="button"
           onClick={onClose}
-          className="ml-auto rounded-lg px-3 py-1.5 text-sm text-stone-600 hover:bg-stone-100"
+          className="btn btn-tag btn-sm ml-auto"
         >
           닫기
         </button>
@@ -85,7 +85,7 @@ export default function AuthorListDialog({ storyId, open, onClose }: Props) {
                     onClick={() =>
                       change.mutate({ userId: author.user_id, make: !author.is_manager })
                     }
-                    className="ml-auto rounded-lg border border-stone-300 px-3 py-1 text-[13px] text-stone-600 hover:border-brand-600 hover:text-brand-700 disabled:opacity-50"
+                    className="btn btn-tag btn-sm ml-auto"
                   >
                     {author.is_manager ? '권한 거두기' : '권한 주기'}
                   </button>

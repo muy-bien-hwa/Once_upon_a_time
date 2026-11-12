@@ -45,7 +45,7 @@ export default function QuotePicker({ storyId, value, onChange }: Props) {
           <button
             type="button"
             onClick={() => onChange(null)}
-            className="ml-auto rounded-lg px-2 py-1 text-stone-500 hover:bg-white hover:text-stone-800"
+            className="btn btn-tag btn-sm ml-auto"
           >
             인용 빼기
           </button>
@@ -96,7 +96,7 @@ export default function QuotePicker({ storyId, value, onChange }: Props) {
         <button
           type="button"
           onClick={close}
-          className="shrink-0 rounded-lg px-2 py-1 text-sm text-stone-500 hover:bg-stone-100"
+          className="btn btn-tag btn-sm"
         >
           닫기
         </button>
@@ -138,7 +138,7 @@ export default function QuotePicker({ storyId, value, onChange }: Props) {
                 type="button"
                 disabled={search.isFetchingNextPage}
                 onClick={() => search.fetchNextPage()}
-                className="rounded-full border border-stone-300 px-4 py-1.5 text-sm text-stone-600 transition hover:border-stone-400 hover:text-stone-800 disabled:opacity-50"
+                className="btn btn-tag btn-sm"
               >
                 {search.isFetchingNextPage
                   ? '불러오는 중…'

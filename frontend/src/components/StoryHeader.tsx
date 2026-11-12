@@ -1,7 +1,6 @@
 import { Link } from 'react-router'
 import type { Story } from '../api/stories.ts'
 import AccountBar from './AccountBar.tsx'
-import { ChevronLeft } from './icons.tsx'
 import ShareButton from './ShareButton.tsx'
 
 type Props = {
@@ -16,16 +15,13 @@ export default function StoryHeader({ title, story, tab = 'read' }: Props) {
   return (
     <header>
       <div className="flex items-center justify-between gap-3">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-800"
-        >
-          <ChevronLeft className="h-4 w-4" /> 목록
+        <Link to="/" className="btn btn-nav">
+          목록
         </Link>
         <AccountBar />
       </div>
       <div className="mt-2 flex items-start justify-between gap-3">
-        <h1 className="text-2xl font-bold text-stone-800 sm:text-3xl">{title}</h1>
+        <h1 className="font-serif text-2xl font-semibold text-stone-900 sm:text-3xl">{title}</h1>
         <ShareButton title={title} />
       </div>
 

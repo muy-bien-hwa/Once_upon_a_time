@@ -4,7 +4,6 @@ import { ApiError } from '../api/client.ts'
 import { fetchAuthor, fetchAuthorSentences, type ProfileSort } from '../api/profile.ts'
 import AccountBar from '../components/AccountBar.tsx'
 import { PillButton, SearchBox } from '../components/ListControls.tsx'
-import { ChevronLeft } from '../components/icons.tsx'
 import Notice from '../components/Notice.tsx'
 import ProfileFrame, { Panel } from '../components/ProfileLayout.tsx'
 import SentenceRow from '../components/SentenceRow.tsx'
@@ -50,9 +49,9 @@ export default function AuthorPage() {
     <>
       <Link
         to="/"
-        className="inline-flex min-h-11 items-center gap-1 text-sm text-stone-500 transition hover:text-stone-800"
+        className="btn btn-nav"
       >
-        <ChevronLeft className="h-4 w-4" /> 홈
+        홈
       </Link>
       <AccountBar />
     </>
@@ -135,7 +134,7 @@ export default function AuthorPage() {
               <button
                 type="button"
                 onClick={() => change({ q: '' })}
-                className="inline-flex min-h-11 items-center rounded-lg border border-stone-200 px-3 text-sm text-stone-700 transition hover:bg-stone-100"
+                className="btn btn-tag"
               >
                 검색 지우기
               </button>

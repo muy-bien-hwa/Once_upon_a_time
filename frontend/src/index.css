@@ -8,8 +8,8 @@
   --font-sans: 'Pretendard Variable', Pretendard, system-ui, 'Apple SD Gothic Neo', sans-serif;
   --font-serif: 'Noto Serif KR', 'Nanum Myeongjo', serif;
 
-  /* 문장 본문 전용 크기: 18px · 줄간격 1.8 (명조는 고딕보다 작아 보여서 조금 크게) */
-  --text-sentence: 1.125rem;
+  /* 문장 본문 전용 크기: 17px · 줄간격 1.8 (D-103: 18px에서 한 단계 줄임) */
+  --text-sentence: 1.0625rem;
   --text-sentence--line-height: 1.8;
   --text-sentence--letter-spacing: -0.003em;
 
@@ -35,6 +35,193 @@
     0 1px 0 0 rgba(120, 113, 108, 0.1), 0 2px 6px -2px rgba(68, 64, 60, 0.12);
   --shadow-paper-lift:
     0 2px 0 0 rgba(120, 113, 108, 0.1), 0 8px 18px -6px rgba(68, 64, 60, 0.18);
+}
+
+/* ── 버튼 (D-103) ──
+   알약 대신 종이 조각 모양. 꾸밈 클래스를 붙여 씀:
+   - .btn-tag  : 오른쪽 아래 귀퉁이를 비스듬히 자른 꼬리표 (기본)
+   - .btn-fold : 오른쪽 위 귀퉁이를 접은 쪽지 (새 스토리 · 글쓰기 · 공유 · 신고)
+   - .btn-nav  : 왼쪽을 가리키는 화살표 꼬리표 (목록 · 홈으로 돌아가기)
+   - 크기 .btn-sm · .btn-lg / 색 .btn-primary(초록) · .btn-on(누른 상태) · .btn-down(비추천 누름) · .btn-danger(삭제 확인)
+   - .btn-quiet : 누르기 전의 추천·비추천 (바탕 없이 연하게 → 신고 버튼과 겹쳐 보이지 않게) */
+@property --btn-fold {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 10px;
+}
+
+:root {
+  --btn-paper: #ebe5d8;
+  --btn-paper-hover: #dfd8c8;
+  --btn-ink: #44403c;
+  --btn-ink-hover: #1c1917;
+}
+
+@layer components {
+  .btn {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    height: 2.25rem;
+    padding: 0 1rem;
+    border: 0;
+    background-color: var(--btn-paper);
+    color: var(--btn-ink);
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color 150ms,
+      color 150ms,
+      transform 80ms,
+      --btn-fold 150ms;
+  }
+  .btn:hover {
+    background-color: var(--btn-paper-hover);
+    color: var(--btn-ink-hover);
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-sm {
+    height: 1.75rem;
+    padding: 0 0.6875rem;
+    font-size: 0.8125rem;
+  }
+  .btn-lg {
+    height: 3rem;
+    padding: 0 1.875rem;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  /* 손가락으로 누르는 기기에서는 작은 버튼을 조금 키움 */
+  @media (pointer: coarse) {
+    .btn-sm {
+      height: 2rem;
+      padding: 0 0.8125rem;
+    }
+  }
+
+  .btn-tag {
+    --btn-cut: 8px;
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      100% calc(100% - var(--btn-cut)),
+      calc(100% - var(--btn-cut)) 100%,
+      0 100%
+    );
+  }
+  .btn-tag.btn-sm {
+    --btn-cut: 6px;
+  }
+
+  .btn-nav {
+    height: 2.75rem;
+    padding: 0 1.125rem 0 1.625rem;
+    font-size: 1rem;
+    clip-path: polygon(17px 0, 100% 0, 100% 100%, 17px 100%, 0 50%);
+  }
+  .btn-nav:hover {
+    transform: translateX(-3px);
+  }
+
+  .btn-fold {
+    --btn-fold: 10px;
+    border-radius: 2px;
+    clip-path: polygon(
+      0 0,
+      calc(100% - var(--btn-fold)) 0,
+      100% var(--btn-fold),
+      100% 100%,
+      0 100%
+    );
+  }
+  .btn-fold::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: var(--btn-fold);
+    height: var(--btn-fold);
+    pointer-events: none;
+    background: linear-gradient(to bottom left, transparent 50%, rgba(60, 45, 20, 0.26) 50%);
+  }
+  .btn-fold:hover {
+    --btn-fold: 15px;
+  }
+  .btn-fold.btn-sm {
+    --btn-fold: 7px;
+  }
+  .btn-fold.btn-sm:hover {
+    --btn-fold: 10px;
+  }
+  .btn-fold.btn-lg {
+    --btn-fold: 13px;
+  }
+  .btn-fold.btn-lg:hover {
+    --btn-fold: 19px;
+  }
+  .btn-fold:disabled {
+    --btn-fold: 7px;
+  }
+
+  .btn-primary,
+  .btn-on {
+    background-color: var(--color-brand-600);
+    color: #fff;
+  }
+  .btn-primary:hover,
+  .btn-on:hover {
+    background-color: var(--color-brand-700);
+    color: #fff;
+  }
+  .btn-fold.btn-primary::after {
+    background: linear-gradient(to bottom left, transparent 50%, rgba(0, 0, 0, 0.32) 50%);
+  }
+  /* 상태 거르개처럼 초록과 다른 묶음임을 보여 줄 때 */
+  .btn-ink,
+  .btn-ink:hover {
+    background-color: #44403c;
+    color: #fff;
+  }
+  .btn-down,
+  .btn-down:hover,
+  .btn-danger {
+    background-color: var(--color-down-600);
+    color: #fff;
+  }
+  .btn-danger:hover {
+    background-color: #9d3b33;
+    color: #fff;
+  }
+
+  .btn-vote {
+    height: 1.625rem;
+    padding: 0 0.4375rem;
+    gap: 0.1875rem;
+    font-size: 0.75rem;
+  }
+  .btn-quiet {
+    background-color: transparent;
+    color: #a8a29e;
+    clip-path: none;
+  }
+  .btn-quiet:hover {
+    background-color: #f5f5f4;
+    color: #44403c;
+  }
 }
 
 /* 한글은 단어 단위로 줄바꿈 (줄 끝에서 단어가 잘리지 않게) */
