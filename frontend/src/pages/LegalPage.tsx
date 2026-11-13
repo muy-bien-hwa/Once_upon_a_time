@@ -46,16 +46,17 @@ export default function LegalPage({ doc }: { doc: LegalDoc }) {
           {doc.intro && <p className="mb-6 text-stone-600">{doc.intro}</p>}
 
           {doc.chapters.map((chapter) => (
-            <section key={chapter.name ?? 'first'}>
+            // 장과 장 사이를 떼어 놓음 (장 이름이 있는 약관에서만 — first:는 첫 장)
+            <section key={chapter.name ?? 'first'} className={chapter.name ? 'mt-12 first:mt-0' : ''}>
               {chapter.name && (
-                <h2 className="mt-9 border-b border-stone-200 pb-2 font-serif text-lg font-bold text-brand-700 first:mt-0">
+                <h2 className="border-b border-stone-200 pb-2.5 font-serif text-lg font-bold text-brand-700">
                   {chapter.name}
                 </h2>
               )}
               {chapter.articles.map((item) => (
-                <section key={item.title} className="mt-6">
+                <section key={item.title} className="mt-7">
                   <h3 className="font-serif font-bold text-stone-900">{item.title}</h3>
-                  <div className="mt-1.5 flex flex-col gap-1.5">
+                  <div className="mt-2 flex flex-col gap-2">
                     {item.blocks.map((block, index) => (
                       <Block key={index} block={block} />
                     ))}
@@ -79,7 +80,7 @@ function Block({ block }: { block: LegalBlock }) {
 
   if ('sub' in block) {
     return (
-      <div className="flex flex-col gap-1 pl-4 text-stone-600">
+      <div className="flex flex-col gap-1.5 py-0.5 pl-4 text-stone-600">
         {block.sub.map((line) => (
           <p key={line}>{line}</p>
         ))}
