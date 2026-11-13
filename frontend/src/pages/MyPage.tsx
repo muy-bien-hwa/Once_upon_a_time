@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
-import { fetchMySentences, fetchMySummary } from '../api/profile.ts'
+import { fetchMySentences, fetchMySummary, type MeSummary } from '../api/profile.ts'
 import DeleteAccount from '../components/DeleteAccount.tsx'
+import LevelBadge from '../components/LevelBadge.tsx'
 import LoginButton from '../components/LoginButton.tsx'
 import LogoutButton from '../components/LogoutButton.tsx'
 import Notice from '../components/Notice.tsx'
@@ -65,6 +66,11 @@ export default function MyPage() {
       <header>
         <h1 className="font-serif text-2xl font-semibold text-stone-900">
           {me.nickname ?? '이름 없는 작가'}
+          <LevelBadge
+            name={summary.data?.level_name}
+            label={summary.data?.level_label}
+            className="ml-2"
+          />
         </h1>
         <p className="mt-1 text-sm text-stone-500">
           {summary.data
@@ -82,7 +88,31 @@ export default function MyPage() {
           </div>
         </Panel>
 
-        <Panel title="내 문장" className="lg:col-start-2 lg:row-start-1 lg:row-span-3">
+        <Panel title="내 단계" className="lg:col-start-1 lg:row-start-2">
+          {summary.isPending ? (
+            <div className="h-20 animate-pulse rounded-lg bg-stone-100" />
+          ) : summary.isError ? (
+            <p className="text-sm text-stone-500">{summary.error.message}</p>
+          ) : (
+            <LevelBox summary={summary.data} />
+          )}
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            <Link
+              to="/me/score"
+              className="btn btn-tag btn-sm"
+            >
+              점수 기록
+            </Link>
+            <Link
+              to="/levels"
+              className="btn btn-tag btn-sm"
+            >
+              단계 보기
+            </Link>
+          </div>
+        </Panel>
+
+        <Panel title="내 문장" className="lg:col-start-2 lg:row-start-1 lg:row-span-4">
           {sentences.isPending ? (
             <div className="h-40 animate-pulse rounded-lg bg-stone-100" />
           ) : sentences.isError ? (
@@ -116,7 +146,7 @@ export default function MyPage() {
           )}
         </Panel>
 
-        <Panel title="닉네임" className="lg:col-start-1 lg:row-start-2">
+        <Panel title="닉네임" className="lg:col-start-1 lg:row-start-3">
           <p className="text-sm text-stone-600">
             {me.nickname ?? '아직 정하지 않았어요'}
             {me.nickname_editable_at && (
@@ -134,11 +164,49 @@ export default function MyPage() {
           </Link>
         </Panel>
 
-        <Panel title="계정 삭제" danger className="lg:col-start-1 lg:row-start-3">
+        <Panel title="계정 삭제" danger className="lg:col-start-1 lg:row-start-4">
           <DeleteAccount nickname={me.nickname} />
         </Panel>
       </div>
     </ProfileFrame>
+  )
+}
+
+// 단계 칸 (6-8) — 지금 단계 · 점수 · 다음 단계까지
+function LevelBox({ summary }: { summary: MeSummary }) {
+  // next_score가 null이면 더 오를 단계가 없음
+  const next = summary.next_score
+  const remain = next === null ? 0 : Math.max(next - summary.score, 0)
+  // 막대는 **이번 단계 안에서** 얼마나 왔는지 (0점부터가 아니라 이 단계가 시작된 점수부터)
+  // 0점부터 재면 막 올라온 사람도 거의 꽉 찬 것처럼 보임 — 46단계 770점이 99%가 되어 버림
+  const span = next === null ? 0 : next - summary.level_score
+  const filled =
+    next === null ? 100 : span > 0 ? Math.min(((summary.score - summary.level_score) / span) * 100, 100) : 0
+
+  return (
+    <>
+      <p className="font-serif text-lg font-semibold text-stone-900">{summary.level_label}</p>
+      <div className="mt-2 flex items-baseline justify-between gap-2 text-xs text-stone-500">
+        <span className="tabular-nums">
+          <b className="text-sm font-semibold text-brand-700">
+            {summary.score.toLocaleString('ko-KR')}
+          </b>
+          점
+        </span>
+        <span className="tabular-nums">
+          {next === null ? '맨 위 단계예요' : `다음 단계까지 ${remain.toLocaleString('ko-KR')}점`}
+        </span>
+      </div>
+      <span
+        aria-hidden
+        className="mt-1 block h-1.5 overflow-hidden rounded-full bg-stone-200"
+      >
+        <span
+          className="block h-full rounded-full bg-brand-600"
+          style={{ width: `${filled}%` }}
+        />
+      </span>
+    </>
   )
 }
 

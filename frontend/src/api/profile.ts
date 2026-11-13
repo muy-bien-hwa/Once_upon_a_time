@@ -1,7 +1,22 @@
 // 마이페이지·작가 화면 (#34~#37)
 import { apiDelete, apiGet } from './client.ts'
 
-export type MeSummary = {
+// 단계(6-8) — 규칙은 서버가 가지고 있고 화면은 받은 값만 보여 줌
+// 문장 하나 10점 · 받은 추천 하나 1점 → 「가」부터 「히」까지 399단계
+export type LevelFields = {
+  score: number
+  level: number
+  // 0단계(점수가 없을 때)만 null
+  level_name: string | null
+  // 서버가 만들어 보내는 문구 ("「개」 단계" · 0단계는 "아직 레벨이 없어요")
+  level_label: string
+  // 지금 단계가 시작된 점수 — 진행 막대를 이 단계 안에서 그림
+  level_score: number
+  // 맨 위 단계면 null
+  next_score: number | null
+}
+
+export type MeSummary = LevelFields & {
   joined_at: string
   // 아래 숫자 셋은 목록과 같은 범위 (지운 문장·접힌 문장 포함)
   sentence_count: number
@@ -39,21 +54,44 @@ export type ProfileSort = 'latest' | 'votes'
 // 내 문장 거르개: 전체(기본) · 보임 · 삭제함 · 신고 처리됨
 export type ProfileFilter = 'all' | 'active' | 'deleted' | 'folded'
 
-export type ListOptions = {
+export type PageOptions = {
   page?: number
   size?: number
+}
+
+export type ListOptions = PageOptions & {
   sort?: ProfileSort
   q?: string
   status?: ProfileFilter
 }
 
-export type Author = {
+export type Author = LevelFields & {
   nickname: string
   // 날짜까지는 공개하지 않음 — "2026-05" (D-95)
   joined_month: string
   sentence_count: number
   story_count: number
   received_up_count: number
+}
+
+// 점수 기록 한 줄 — 문장을 써서 받은 10점, 또는 추천을 받아 생긴 1점
+export type ScoreEvent = {
+  kind: 'sentence' | 'up'
+  points: number
+  at: string
+  story_id: number
+  story_title: string
+  sentence_id: number
+  // 지운 문장·접힌 문장은 본문이 null (서버가 보내지 않음)
+  sentence_content: string | null
+}
+
+export type ScoreHistory = {
+  // 최근 것부터
+  items: ScoreEvent[]
+  page: number
+  size: number
+  total: number
 }
 
 export function fetchAuthor(nickname: string, signal?: AbortSignal) {
@@ -75,6 +113,10 @@ export function fetchMySummary(signal?: AbortSignal) {
 
 export function fetchMySentences(options: ListOptions, signal?: AbortSignal) {
   return apiGet<ProfileSentenceList>(withOptions('/api/me/sentences', options), signal)
+}
+
+export function fetchMyScoreHistory(options: PageOptions, signal?: AbortSignal) {
+  return apiGet<ScoreHistory>(withOptions('/api/me/score-history', options), signal)
 }
 
 export function withdraw() {

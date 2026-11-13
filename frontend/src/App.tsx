@@ -6,6 +6,7 @@ import { TERMS } from './content/terms.ts'
 import AuthorPage from './pages/AuthorPage.tsx'
 import ForumPage from './pages/ForumPage.tsx'
 import LegalPage from './pages/LegalPage.tsx'
+import LevelsPage from './pages/LevelsPage.tsx'
 import ForumPostPage from './pages/ForumPostPage.tsx'
 import MyPage from './pages/MyPage.tsx'
 import MySentencesPage from './pages/MySentencesPage.tsx'
@@ -13,6 +14,7 @@ import NewPostPage from './pages/NewPostPage.tsx'
 import NewStoryPage from './pages/NewStoryPage.tsx'
 import NicknamePage from './pages/NicknamePage.tsx'
 import NotFoundPage from './pages/NotFoundPage.tsx'
+import ScoreHistoryPage from './pages/ScoreHistoryPage.tsx'
 import SentenceReadPage from './pages/SentenceReadPage.tsx'
 import StoryListPage from './pages/StoryListPage.tsx'
 
@@ -30,7 +32,10 @@ export default function App() {
         <Route path="/nickname" element={<NicknamePage />} />
         <Route path="/me" element={<MyPage />} />
         <Route path="/me/sentences" element={<MySentencesPage />} />
+        <Route path="/me/score" element={<ScoreHistoryPage />} />
         <Route path="/u/:nickname" element={<AuthorPage />} />
+        {/* 단계 사다리 — 로그인하지 않아도 볼 수 있음 */}
+        <Route path="/levels" element={<LevelsPage />} />
         <Route path="/terms" element={<LegalPage doc={TERMS} />} />
         <Route path="/policy" element={<LegalPage doc={OPERATION} />} />
         <Route path="/privacy" element={<LegalPage doc={PRIVACY} />} />

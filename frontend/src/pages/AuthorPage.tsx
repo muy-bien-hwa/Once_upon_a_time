@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router'
 import { ApiError } from '../api/client.ts'
 import { fetchAuthor, fetchAuthorSentences, type ProfileSort } from '../api/profile.ts'
 import AccountBar from '../components/AccountBar.tsx'
+import LevelBadge from '../components/LevelBadge.tsx'
 import { PillButton, SearchBox } from '../components/ListControls.tsx'
 import Notice from '../components/Notice.tsx'
 import ProfileFrame, { Panel } from '../components/ProfileLayout.tsx'
@@ -90,6 +91,11 @@ export default function AuthorPage() {
           <div>
             <h1 className="font-serif text-2xl font-semibold text-stone-900">
               {author.data.nickname}
+              <LevelBadge
+                name={author.data.level_name}
+                label={author.data.level_label}
+                className="ml-2"
+              />
             </h1>
             {/* 날짜까지는 공개하지 않기로 함 (D-95) */}
             <p className="mt-1 text-sm text-stone-500">
