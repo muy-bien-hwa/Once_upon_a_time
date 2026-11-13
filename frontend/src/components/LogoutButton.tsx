@@ -6,8 +6,12 @@ export default function LogoutButton() {
   const queryClient = useQueryClient()
   const signOut = useMutation({
     mutationFn: logout,
-    // 로그아웃하면 받아 둔 내용을 모두 비움 (다른 사람 화면이 남지 않게)
-    onSuccess: () => queryClient.clear(),
+    // 받아 둔 내용을 모두 비우고 지금 보고 있는 것만 손님으로 다시 받아 옴
+    // ⚠️ clear()만 하면 안 됨 — 캐시에서 지워도 이미 화면에 붙어 있는 화면은
+    //    다시 그려지지 않아서, 새로고침할 때까지 로그인한 모습이 그대로 남는다
+    onSuccess: () => {
+      queryClient.resetQueries()
+    },
   })
 
   return (
