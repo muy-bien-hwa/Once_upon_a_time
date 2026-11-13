@@ -14,6 +14,7 @@ from app.schemas.profile import (
     ProfileFilter,
     ProfileSentenceListOut,
     ProfileSort,
+    ScoreHistoryOut,
 )
 from app.schemas.user import MeOut, NicknameUpdate
 from app.security import COOKIE_NAME
@@ -103,3 +104,14 @@ def my_sentences(
 ) -> ProfileSentenceListOut:
     """내가 쓴 문장 (#35). 지운 문장·접힌 문장도 나오지만 본문은 비어 있음"""
     return profile_service.my_sentences(db, user, page, size, sort, q, status)
+
+
+@router.get("/score-history")
+def my_score_history(
+    db: DbSession,
+    user: CurrentUser,
+    page: Annotated[int, Query(ge=1)] = 1,
+    size: Annotated[int, Query(ge=1, le=50)] = 20,
+) -> ScoreHistoryOut:
+    """내 점수가 어디서 왔는지 (D-100) — 문장 쓴 일 10점, 추천 받은 일 1점씩 최신순"""
+    return profile_service.score_history(db, user, page, size)

@@ -86,5 +86,7 @@ def test_standing_is_what_the_screen_needs():
         "level": 27,
         "level_name": "께",
         "level_label": "「께」 단계",
+        # 27단계는 330점부터 (첫 줄 210점 + 둘째 줄 20점 × 6칸)
+        "level_score": 330,
         "next_score": 350,
     }

@@ -80,5 +80,8 @@ def standing(sentence_count: int, received_up_count: int) -> dict:
         "level": level,
         "level_name": name_of(level),
         "level_label": label_of(level),
+        # 지금 단계가 시작된 점수 — 화면의 진행 막대가 "이 단계 안에서 얼마나 왔는지"를 그리는 데 씀
+        # (이것 없이 점수 ÷ 다음 단계로 그리면 막 올라온 사람도 막대가 꽉 찬 것처럼 보임)
+        "level_score": score_for(level),
         "next_score": next_score(level),
     }

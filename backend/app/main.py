@@ -8,7 +8,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from app import safety, web
 from app.config import settings
 from app.db import engine
-from app.routers import auth, forum, me, sentences, stats, stories, users
+from app.routers import auth, forum, levels, me, sentences, stats, stories, users
 from app.security import OAUTH_COOKIE_NAME, OAUTH_SECONDS
 
 logger = logging.getLogger(__name__)
@@ -43,6 +43,7 @@ app.include_router(sentences.router)
 app.include_router(stats.router)
 app.include_router(forum.router)
 app.include_router(users.router)
+app.include_router(levels.router)
 
 
 @app.get("/api/health")
