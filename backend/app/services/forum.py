@@ -21,7 +21,7 @@ from app.schemas.forum import (
     PostSummary,
     QuotedSentence,
 )
-from app.services import limits, managers, users
+from app.services import levels, limits, managers, standings, users
 from app.services.ranking import rank_score
 from app.services.stories import find_visible_story
 from app.timeutil import kst_now
@@ -80,7 +80,7 @@ def list_posts(
     """
     find_visible_story(db, story_id)
 
-    items = [_to_summary(row) for row in db.execute(_select_posts(user_id, story_id))]
+    items = _to_summaries(db, db.execute(_select_posts(user_id, story_id)).all())
     ordered = _order(items, sort)
     start = (page - 1) * size
     return PostListOut(
@@ -100,7 +100,7 @@ def get_post(db: Session, post_id: int, user_id: int | None = None) -> PostOut:
     post = row[0]
     # 스토리째 숨겨졌으면 그 안의 글도 보이지 않음
     find_visible_story(db, post.story_id)
-    summary = _to_summary(row)
+    summary = _to_summaries(db, [row])[0]
     return PostOut(
         **summary.model_dump(),
         body=None if summary.status == "folded" else post.body,
@@ -205,17 +205,31 @@ def _check_quote(db: Session, story_id: int, sentence_id: int | None) -> None:
         raise api_error(404, "QUOTE_NOT_FOUND", "인용할 문장을 찾을 수 없어요")
 
 
-def _to_summary(row: Row) -> PostSummary:
+def _to_summaries(db: Session, rows: list[Row]) -> list[PostSummary]:
+    """줄마다 레벨을 따로 묻지 않도록, 이 쪽에 나온 작성자들의 레벨을 **한 번에** 가져와 붙임 (D-100)
+
+    글 하나를 볼 때도 같은 길을 지나므로, 레벨이 붙는 자리는 이 함수 하나뿐이다
+    """
+    found = standings.levels_of(db, [row[0].author_id for row in rows])
+    return [_to_summary(row, found) for row in rows]
+
+
+def _to_summary(row: Row, found: dict[int, dict]) -> PostSummary:
     post, nickname, up, down, mine, reported, comments, quote_id, quote_content = row
     # 신고로 접힌 글은 제목·본문·작성자·인용을 보내지 않음 → 화면엔 문구만 (D-69와 같은 방식)
     hidden = post.status == "folded"
     gone = nickname is None
+    # 작성자를 비운 줄은 레벨 딱지도 비움 (레벨만 남으면 가린 사람이 누구인지 좁혀짐)
+    # 탈퇴한 사람은 그대로 둠 — 탈퇴한다고 그동안 쓴 것이 없던 일이 되지는 않으므로 (D-95)
+    level = 0 if hidden else found[post.author_id]["level"]
     return PostSummary(
         id=post.id,
         story_id=post.story_id,
         title=None if hidden else post.title,
         author_nickname=None if hidden else users.name_of(nickname),
         author_withdrawn=gone,
+        author_level_name=levels.name_of(level),
+        author_level_label=levels.label_of(level),
         status=post.status,
         created_at=post.created_at,
         up_count=up,

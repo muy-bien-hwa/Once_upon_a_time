@@ -44,6 +44,11 @@ class PostSummary(BaseModel):
     author_nickname: str | None
     # 작성자가 탈퇴했는지 → 이름을 작가 화면 링크로 만들지 말지 (D-95)
     author_withdrawn: bool
+    # 이름 옆에 붙이는 레벨 딱지 (D-100) — 작가 화면이 말하는 그 사람의 레벨과 같은 값
+    # 레벨이 없거나(0단계) 작성자를 비운 줄(접힘)이면 이름이 없음 / 탈퇴한 사람은 그대로 보냄
+    author_level_name: str | None
+    # 화면에 그대로 적는 말 ("「가」 단계" 또는 "아직 레벨이 없어요")
+    author_level_label: str
     status: Literal["active", "folded"]
     created_at: datetime
     up_count: int
@@ -92,6 +97,9 @@ class CommentOut(BaseModel):
     author_nickname: str | None
     # 작성자가 탈퇴했는지 (D-95)
     author_withdrawn: bool
+    # 이름 옆에 붙이는 레벨 딱지 (D-100, PostSummary와 같은 규칙)
+    author_level_name: str | None
+    author_level_label: str
     status: Literal["active", "folded"]
     # 누구에게 한 말인지 (@닉네임) — 지금 닉네임으로 보냄 (D-91)
     reply_to_nickname: str | None

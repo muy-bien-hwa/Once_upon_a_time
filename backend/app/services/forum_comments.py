@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session, aliased
 from app.errors import api_error
 from app.models import ForumComment, ForumPost, Report, User
 from app.schemas.forum import CommentCreate, CommentOut
-from app.services import limits, users
+from app.services import levels, limits, standings, users
 from app.services.forum import post_gone
 from app.services.stories import find_visible_story
 
@@ -23,7 +23,7 @@ def list_comments(db: Session, post_id: int, user_id: int | None = None) -> list
     """글의 댓글 전부 (쓴 순서대로). 화면에서 맨 위 댓글 + 답글로 묶음"""
     readable_post(db, post_id)
     rows = db.execute(_select_comments(user_id).where(ForumComment.post_id == post_id)).all()
-    return [_to_out(row) for row in sorted(rows, key=lambda r: (r[0].created_at, r[0].id))]
+    return _to_outs(db, sorted(rows, key=lambda r: (r[0].created_at, r[0].id)))
 
 
 def create_comment(db: Session, user: User, post_id: int, data: CommentCreate) -> CommentOut:
@@ -51,7 +51,7 @@ def get_comment(db: Session, comment_id: int, user_id: int | None = None) -> Com
     row = db.execute(_select_comments(user_id).where(ForumComment.id == comment_id)).first()
     if row is None:
         raise comment_gone(db, comment_id)
-    return _to_out(row)
+    return _to_outs(db, [row])[0]
 
 
 def delete_comment(db: Session, user: User, comment_id: int) -> None:
@@ -131,11 +131,19 @@ def _my_report(user_id: int | None):
     )
 
 
-def _to_out(row: Row) -> CommentOut:
+def _to_outs(db: Session, rows: list[Row]) -> list[CommentOut]:
+    """댓글마다 레벨을 따로 묻지 않도록, 나온 작성자들의 레벨을 **한 번에** 가져와 붙임 (D-100)"""
+    found = standings.levels_of(db, [row[0].author_id for row in rows])
+    return [_to_out(row, found) for row in rows]
+
+
+def _to_out(row: Row, found: dict[int, dict]) -> CommentOut:
     comment, nickname, mentioned, reported = row
     # 신고로 접힌 댓글은 내용과 작성자를 보내지 않음 (D-69와 같은 방식)
     hidden = comment.status == "folded"
     gone = nickname is None
+    # 작성자를 비운 줄은 레벨 딱지도 비움 (글 목록과 같은 규칙, D-100)
+    level = 0 if hidden else found[comment.author_id]["level"]
     return CommentOut(
         id=comment.id,
         post_id=comment.post_id,
@@ -143,6 +151,8 @@ def _to_out(row: Row) -> CommentOut:
         body=None if hidden else comment.body,
         author_nickname=None if hidden else users.name_of(nickname),
         author_withdrawn=gone,
+        author_level_name=levels.name_of(level),
+        author_level_label=levels.label_of(level),
         status=comment.status,
         reply_to_nickname=mentioned,
         reported_by_me=reported,
