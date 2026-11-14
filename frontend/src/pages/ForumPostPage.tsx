@@ -8,6 +8,7 @@ import CommentInput from '../components/CommentInput.tsx'
 import CommentList from '../components/CommentList.tsx'
 import ConfirmDialog from '../components/ConfirmDialog.tsx'
 import { CaretDown, CaretUp } from '../components/icons.tsx'
+import LevelBadge from '../components/LevelBadge.tsx'
 import Notice from '../components/Notice.tsx'
 import PinButton from '../components/PinButton.tsx'
 import PostVote from '../components/PostVote.tsx'
@@ -106,6 +107,11 @@ export default function ForumPostPage() {
                           nickname={post!.author_nickname}
                           withdrawn={post!.author_withdrawn}
                           className="font-medium text-stone-600"
+                        />
+                        {/* 단계 배지는 커뮤니티에만 — 이야기 문장 옆에는 붙이지 않음 (6-8) */}
+                        <LevelBadge
+                          name={post!.author_level_name}
+                          label={post!.author_level_label}
                         />
                         <span aria-hidden className="text-stone-300">
                           ·

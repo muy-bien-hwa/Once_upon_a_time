@@ -16,6 +16,10 @@ export type PostSummary = {
   author_nickname: string | null
   // 작성자가 탈퇴했는지 → 이름을 작가 화면 링크로 만들지 말지 (D-95)
   author_withdrawn: boolean
+  // 작성자 단계 (6-8) — 0단계이거나 작성자가 비어 있으면 null
+  author_level_name: string | null
+  // 서버가 만들어 보내는 문구 ("「개」 단계")
+  author_level_label: string
   status: 'active' | 'folded'
   created_at: string
   up_count: number
@@ -53,6 +57,10 @@ export type Comment = {
   author_nickname: string | null
   // 작성자가 탈퇴했는지 → 이름을 작가 화면 링크로 만들지 말지 (D-95)
   author_withdrawn: boolean
+  // 작성자 단계 (6-8) — 0단계이거나 작성자가 비어 있으면 null
+  author_level_name: string | null
+  // 서버가 만들어 보내는 문구 ("「개」 단계")
+  author_level_label: string
   status: 'active' | 'folded'
   // 누구에게 한 말인지 (@닉네임)
   reply_to_nickname: string | null

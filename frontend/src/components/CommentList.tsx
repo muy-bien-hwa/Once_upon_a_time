@@ -5,6 +5,7 @@ import { useMe } from '../lib/useMe.ts'
 import { formatDate, formatTimeAgo } from '../lib/time.ts'
 import AuthorLink from './AuthorLink.tsx'
 import CommentInput from './CommentInput.tsx'
+import LevelBadge from './LevelBadge.tsx'
 import ReportButton from './ReportButton.tsx'
 
 // 댓글 2단 (D-91)
@@ -108,6 +109,11 @@ function CommentRow({
           nickname={comment.author_nickname}
           withdrawn={comment.author_withdrawn}
           className="font-medium text-stone-600"
+        />
+        {/* 단계 배지는 커뮤니티에만 — 이야기 문장 옆에는 붙이지 않음 (6-8) */}
+        <LevelBadge
+          name={comment.author_level_name}
+          label={comment.author_level_label}
         />
         <span aria-hidden className="text-stone-300">
           ·

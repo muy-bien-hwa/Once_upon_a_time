@@ -3,6 +3,7 @@ import type { PostSummary } from '../api/forum.ts'
 import { formatDate, formatTimeAgo } from '../lib/time.ts'
 import AuthorLink from './AuthorLink.tsx'
 import { CaretDown, CaretUp } from './icons.tsx'
+import LevelBadge from './LevelBadge.tsx'
 import PostVote from './PostVote.tsx'
 
 // 커뮤니티 글 목록의 한 줄 (D-42·D-91)
@@ -50,6 +51,11 @@ export default function PostCard({ post }: { post: PostSummary }) {
                 nickname={post.author_nickname}
                 withdrawn={post.author_withdrawn}
                 className="font-medium text-stone-600"
+              />
+              {/* 단계 배지는 커뮤니티에만 — 이야기 문장 옆에는 붙이지 않음 (6-8) */}
+              <LevelBadge
+                name={post.author_level_name}
+                label={post.author_level_label}
               />
               <span aria-hidden className="text-stone-300">
                 ·
